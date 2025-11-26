@@ -109,6 +109,20 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
   const nextStep = async () => {
     const isValid = await validateStep(currentStep);
     if (isValid && currentStep < 4) {
+      // If we're about to enter the Review & Pay step, pre-create the booking/payment intent
+      if (currentStep === 3 && !bookingResult) {
+        setPreparingPayment(true);
+        setWalletError(null);
+        try {
+          await submitBookingIfNeeded();
+        } catch (error) {
+          console.error('Booking preparation failed:', error);
+          setWalletError(error instanceof Error ? error.message : 'Unable to prepare payment.');
+          setPreparingPayment(false);
+          return;
+        }
+        setPreparingPayment(false);
+      }
       setCurrentStep(currentStep + 1);
     }
   };
