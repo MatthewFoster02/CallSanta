@@ -71,7 +71,8 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
-    mode: 'onChange',
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
     defaultValues: {
       childName: '',
       childAge: undefined,
