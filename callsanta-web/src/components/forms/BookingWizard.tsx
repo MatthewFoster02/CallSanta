@@ -142,6 +142,20 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     [pricing.basePrice, pricing.recordingPrice, watchedValues.purchaseRecording]
   );
 
+  const stripeOptions = useMemo(() => {
+    if (!bookingResult) return null;
+    return {
+      clientSecret: bookingResult.clientSecret,
+      appearance: {
+        theme: 'stripe' as const,
+        variables: {
+          colorPrimaryText: '#111827',
+          borderRadius: '8px',
+        },
+      },
+    };
+  }, [bookingResult]);
+
   const markSectionDone = useCallback(
     async (section: 'contact' | 'time') => {
       const fields = section === 'contact'
@@ -473,19 +487,11 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
 
           {bookingResult ? (
             <div className="space-y-4">
-              {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY && stripePromise ? (
+              {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY && stripePromise && stripeOptions ? (
                 <Elements
+                  key={bookingResult.clientSecret}
                   stripe={stripePromise}
-                  options={{
-                    clientSecret: bookingResult.clientSecret,
-                    appearance: {
-                      theme: 'stripe',
-                      variables: {
-                        colorPrimaryText: '#111827',
-                        borderRadius: '8px',
-                      },
-                    },
-                  }}
+                  options={stripeOptions}
                 >
                   <div className="space-y-3">
                     <ExpressCheckoutWrapper
