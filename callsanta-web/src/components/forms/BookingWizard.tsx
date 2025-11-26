@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BookingFormData, bookingSchema } from '@/lib/schemas/booking';
@@ -20,7 +20,7 @@ import {
   Check,
   Loader2
 } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, StripePaymentRequest, StripePaymentRequestButtonElement } from '@stripe/stripe-js';
 
 const STEPS = [
   { id: 1, title: "Child's Info", icon: User },
@@ -65,6 +65,11 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     checkoutUrl: string;
   } | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [walletReady, setWalletReady] = useState(false);
+  const paymentRequestRef = useRef<StripePaymentRequest | null>(null);
+  const paymentRequestButtonRef = useRef<StripePaymentRequestButtonElement | null>(null);
+  const paymentRequestContainerRef = useRef<HTMLDivElement | null>(null);
+  const handlersBoundRef = useRef(false);
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -125,78 +130,8 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     return result;
   };
 
-  const handleWalletPay = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
-
-    setIsSubmitting(true);
-    setWalletError(null);
-    try {
-      const result = await submitBookingIfNeeded();
-
-      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-        throw new Error('Stripe publishable key is not configured');
-      }
-
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-      if (!stripe) {
-        throw new Error('Failed to initialize Stripe');
-      }
-
-      const paymentRequest = stripe.paymentRequest({
-        country: 'US',
-        currency: result.currency,
-        total: {
-          label: 'Santa Call',
-          amount: result.amount,
-        },
-        requestPayerName: true,
-        requestPayerEmail: true,
-      });
-
-      const canPay = await paymentRequest.canMakePayment();
-      if (!canPay) {
-        setWalletError('Apple Pay or Google Pay is not available in this browser. Try Safari for Apple Pay or Chrome on Android.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      paymentRequest.on('paymentmethod', async (ev) => {
-        const confirmation = await stripe.confirmCardPayment(
-          result.clientSecret,
-          {
-            payment_method: ev.paymentMethod.id,
-          },
-          { handleActions: true }
-        );
-
-        if (confirmation.error || confirmation.paymentIntent?.status !== 'succeeded') {
-          ev.complete('fail');
-          setWalletError(confirmation.error?.message || 'Payment failed. Please try again.');
-          setIsSubmitting(false);
-          return;
-        }
-
-        ev.complete('success');
-        window.location.href = `/success?call_id=${result.callId}`;
-      });
-
-      paymentRequest.on('cancel', () => {
-        setIsSubmitting(false);
-      });
-
-      try {
-        await paymentRequest.show();
-      } catch (showError) {
-        console.error('Payment Request show error:', showError);
-        setWalletError('Unable to open Apple Pay / Google Pay on this device.');
-        setIsSubmitting(false);
-      }
-    } catch (error) {
-      console.error('Booking submission failed:', error);
-      setWalletError(error instanceof Error ? error.message : 'Payment failed. Please try again.');
-      setIsSubmitting(false);
-    }
+  const handleWalletPay = () => {
+    setWalletError('Apple Pay / Google Pay is not available in this browser. Use card checkout instead.');
   };
 
   const handleCheckoutRedirect = async () => {
@@ -214,6 +149,127 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
       setIsSubmitting(false);
     }
   };
+
+  // Initialize Payment Request + Apple/Google Pay button
+  useEffect(() => {
+    let cancelled = false;
+
+    const setupPaymentRequest = async () => {
+      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) return;
+
+      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+      if (!stripe || cancelled) return;
+
+      // Destroy previous button if re-rendering
+      if (paymentRequestButtonRef.current) {
+        paymentRequestButtonRef.current.destroy();
+        paymentRequestButtonRef.current = null;
+      }
+
+      const pr = stripe.paymentRequest({
+        country: 'US',
+        currency: 'usd',
+        total: {
+          label: 'Santa Call',
+          amount: totalPrice,
+        },
+        requestPayerName: true,
+        requestPayerEmail: true,
+      });
+
+      const canPay = await pr.canMakePayment();
+      if (!canPay || cancelled) {
+        setWalletReady(false);
+        paymentRequestRef.current = null;
+        return;
+      }
+
+      paymentRequestRef.current = pr;
+      handlersBoundRef.current = false;
+      setWalletReady(true);
+
+      const elements = stripe.elements();
+      const prButton = elements.create('paymentRequestButton', {
+        paymentRequest: pr,
+        style: {
+          paymentRequestButton: {
+            type: 'buy',
+            theme: 'black',
+            height: '48px',
+          },
+        },
+      });
+
+      paymentRequestButtonRef.current = prButton;
+      if (paymentRequestContainerRef.current) {
+        prButton.mount(paymentRequestContainerRef.current);
+      }
+    };
+
+    setupPaymentRequest();
+
+    return () => {
+      cancelled = true;
+      if (paymentRequestButtonRef.current) {
+        paymentRequestButtonRef.current.destroy();
+        paymentRequestButtonRef.current = null;
+      }
+      paymentRequestRef.current = null;
+      handlersBoundRef.current = false;
+    };
+  }, [totalPrice]);
+
+  // Bind payment handlers once Payment Request is ready
+  useEffect(() => {
+    const pr = paymentRequestRef.current;
+    if (!pr || handlersBoundRef.current) return;
+
+    pr.on('paymentmethod', async (ev) => {
+      setIsSubmitting(true);
+      setWalletError(null);
+
+      const isValid = await form.trigger();
+      if (!isValid) {
+        ev.complete('fail');
+        setWalletError('Please complete all required fields before paying.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      try {
+        const result = await submitBookingIfNeeded();
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+        if (!stripe) throw new Error('Failed to initialize Stripe');
+
+        const confirmation = await stripe.confirmCardPayment(
+          result.clientSecret,
+          { payment_method: ev.paymentMethod.id },
+          { handleActions: true }
+        );
+
+        if (confirmation.error || confirmation.paymentIntent?.status !== 'succeeded') {
+          ev.complete('fail');
+          setWalletError(confirmation.error?.message || 'Payment failed. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        ev.complete('success');
+        window.location.href = `/success?call_id=${result.callId}`;
+      } catch (err) {
+        console.error('Wallet payment error:', err);
+        ev.complete('fail');
+        setWalletError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+        setIsSubmitting(false);
+      }
+    });
+
+    pr.on('cancel', () => {
+      setIsSubmitting(false);
+    });
+
+    handlersBoundRef.current = true;
+  }, [form, submitBookingIfNeeded]);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -635,24 +691,24 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
             </Button>
           ) : (
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button
-                type="button"
-                onClick={handleWalletPay}
-                disabled={isSubmitting}
-                size="lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
+              <div className="flex-1 flex items-center">
+                {walletReady ? (
+                  <div
+                    ref={paymentRequestContainerRef}
+                    className="w-full"
+                    role="presentation"
+                  />
                 ) : (
-                  <>
-                    Apple Pay / Google Pay
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </>
+                  <Button
+                    type="button"
+                    onClick={handleWalletPay}
+                    disabled={isSubmitting}
+                    size="lg"
+                  >
+                    Apple Pay / Google Pay unavailable
+                  </Button>
                 )}
-              </Button>
+              </div>
               <Button
                 type="button"
                 variant="secondary"
