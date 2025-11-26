@@ -36,6 +36,16 @@ export function VoiceRecorder({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && state === 'recording') {
+      mediaRecorderRef.current.stop();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  }, [state]);
+
   const startRecording = useCallback(async () => {
     try {
       setError(null);
@@ -70,9 +80,6 @@ export function VoiceRecorder({
       };
 
       mediaRecorder.start(100);
-      setState('recording');
-      setDuration(0);
-
       // Start timer
       timerRef.current = setInterval(() => {
         setDuration(d => {
@@ -84,21 +91,14 @@ export function VoiceRecorder({
         });
       }, 1000);
 
+      setState('recording');
+      setDuration(0);
+
     } catch (err) {
       console.error('Failed to start recording:', err);
       setError('Could not access microphone. Please check your permissions.');
     }
-  }, [maxDuration, onRecordingChange]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && state === 'recording') {
-      mediaRecorderRef.current.stop();
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    }
-  }, [state]);
+  }, [maxDuration, onRecordingChange, stopRecording]);
 
   const playPause = useCallback(() => {
     if (!audioRef.current || !audioUrl) return;

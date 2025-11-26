@@ -1,5 +1,15 @@
+import { useMemo } from "react";
 import Link from "next/link";
 import { Snowfall, Footer } from "@/components/layout";
+
+type Star = { left: number; top: number; delay: number };
+
+const createStars = (count: number): Star[] =>
+  Array.from({ length: count }, (_, i) => ({
+    left: (i * 37) % 100,
+    top: (i * 61) % 100,
+    delay: ((i * 17) % 30) / 10,
+  }));
 
 function XCircleIcon({ className }: { className?: string }) {
   return (
@@ -18,6 +28,11 @@ function ArrowLeftIcon({ className }: { className?: string }) {
 }
 
 export default function CancelledPage() {
+  const stars = useMemo(
+    () => createStars(30),
+    []
+  );
+
   return (
     <div className="min-h-screen">
       <Snowfall />
@@ -25,14 +40,14 @@ export default function CancelledPage() {
       <section className="relative min-h-screen festive-gradient overflow-hidden">
         {/* Stars background */}
         <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 30 }).map((_, i) => (
+          {stars.map((star, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
+                left: `${star.left}%`,
+                top: `${star.top}%`,
+                animationDelay: `${star.delay}s`,
               }}
             />
           ))}

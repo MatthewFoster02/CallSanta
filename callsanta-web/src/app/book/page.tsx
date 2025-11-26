@@ -22,10 +22,9 @@ async function handleBookingSubmit(
   currency: string;
   checkoutUrl: string;
 }> {
-  // Use FormData to send both JSON data and the audio file
+  // Use FormData to stay compatible with optional voice uploads on the API
   const formData = new FormData();
   formData.append('data', JSON.stringify(data));
-
   if (voiceFile) {
     formData.append('voiceRecording', voiceFile);
   }

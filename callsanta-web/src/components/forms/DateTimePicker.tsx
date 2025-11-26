@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DatePicker from 'react-datepicker';
 import { addDays, setHours, setMinutes, addMinutes } from 'date-fns';
 import { Calendar, Zap } from "lucide-react";
@@ -22,27 +22,22 @@ export function DateTimePicker({
   error,
 }: DateTimePickerProps) {
   const [callNow, setCallNow] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const parsedSelectedDate = useMemo(() => {
+    if (!value) return null;
+    try {
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? null : date;
+    } catch {
+      return null;
+    }
+  }, [value]);
 
   // Auto-detect timezone on mount
   useEffect(() => {
     const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     onTimezoneChange(detectedTimezone);
   }, [onTimezoneChange]);
-
-  // Parse value into date on mount
-  useEffect(() => {
-    if (value && !callNow) {
-      try {
-        const date = new Date(value);
-        if (!isNaN(date.getTime())) {
-          setSelectedDate(date);
-        }
-      } catch {
-        // Invalid date, ignore
-      }
-    }
-  }, []);
 
   const handleCallNowToggle = () => {
     const newCallNow = !callNow;
@@ -52,15 +47,12 @@ export function DateTimePicker({
       // Set to current time + 2 minutes
       const now = addMinutes(new Date(), 2);
       onChange(now.toISOString());
-      setSelectedDate(null);
     } else {
-      setSelectedDate(null);
       onChange('');
     }
   };
 
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
     if (date) {
       onChange(date.toISOString());
     } else {
@@ -77,7 +69,7 @@ export function DateTimePicker({
   // Filter times for today - exclude past times
   const filterPassedTime = (time: Date) => {
     const currentDate = new Date();
-    const selectedDateObj = selectedDate || new Date();
+    const selectedDateObj = parsedSelectedDate || new Date();
 
     // If it's today, filter out past times (with 15 min buffer)
     if (selectedDateObj.toDateString() === currentDate.toDateString()) {
@@ -159,7 +151,7 @@ export function DateTimePicker({
             </div>
 
             <DatePicker
-              selected={selectedDate}
+              selected={parsedSelectedDate}
               onChange={handleDateChange}
               showTimeSelect
               timeFormat="h:mm aa"
@@ -180,19 +172,19 @@ export function DateTimePicker({
           </div>
 
           {/* Selected DateTime Summary */}
-          {selectedDate && (
+          {parsedSelectedDate && (
             <div
               className="p-4 rounded-xl border-2 text-center"
               style={{ borderColor: '#165B33', backgroundColor: 'rgba(22, 91, 51, 0.05)' }}
             >
               <p className="text-sm text-gray-600">Santa will call on</p>
               <p className="text-lg font-medium text-gray-900 mt-1">
-                {selectedDate.toLocaleDateString('en-US', {
+                {parsedSelectedDate.toLocaleDateString('en-US', {
                   weekday: 'long',
                   month: 'long',
                   day: 'numeric',
                   year: 'numeric'
-                })} at {selectedDate.toLocaleTimeString('en-US', {
+                })} at {parsedSelectedDate.toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: '2-digit',
                   hour12: true

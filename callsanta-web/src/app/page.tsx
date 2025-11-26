@@ -1,7 +1,17 @@
+import { useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { Card, CardContent } from "@/components/ui";
 import { Snowfall, Footer } from "@/components/layout";
+
+type Star = { left: number; top: number; delay: number };
+
+const createStars = (count: number): Star[] =>
+  Array.from({ length: count }, (_, i) => ({
+    left: (i * 37) % 100,
+    top: (i * 61) % 100,
+    delay: ((i * 17) % 30) / 10,
+  }));
 
 // Icons as simple SVG components
 function PhoneIcon({ className }: { className?: string }) {
@@ -66,6 +76,9 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function Home() {
+  const heroStars = useMemo(() => createStars(50), []);
+  const ctaStars = useMemo(() => createStars(30), []);
+
   return (
     <div className="min-h-screen">
       <Snowfall />
@@ -74,14 +87,14 @@ export default function Home() {
       <section className="relative min-h-screen festive-gradient overflow-hidden">
         {/* Stars background */}
         <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 50 }).map((_, i) => (
+          {heroStars.map((star, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
+                left: `${star.left}%`,
+                top: `${star.top}%`,
+                animationDelay: `${star.delay}s`,
               }}
             />
           ))}
@@ -383,14 +396,14 @@ export default function Home() {
       {/* Final CTA Section */}
       <section className="py-20 md:py-32 festive-gradient relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 30 }).map((_, i) => (
+          {ctaStars.map((star, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
+                left: `${star.left}%`,
+                top: `${star.top}%`,
+                animationDelay: `${star.delay}s`,
               }}
             />
           ))}
