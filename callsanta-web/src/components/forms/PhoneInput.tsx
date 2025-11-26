@@ -1,17 +1,31 @@
 'use client';
 
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import PhoneInputComponent, { Country } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { getCountries } from 'react-phone-number-input/min';
 
 export interface PhoneInputProps {
-  value: string;
+  value?: string;
   onChange: (value: string | undefined) => void;
   label?: string;
   error?: string;
   defaultCountry?: Country;
   placeholder?: string;
   onBlur?: () => void;
+  className?: string;
+}
+
+function detectBrowserCountry(): Country {
+  try {
+    const locale = typeof navigator !== 'undefined' ? navigator.language || "en-US" : "en-US";
+    const region = locale.split("-")[1];
+    if (region && region.length === 2) return region as Country;
+  } catch {
+    /* ignore */
+  }
+  return "US";
 }
 
 export function PhoneInput({
@@ -19,71 +33,45 @@ export function PhoneInput({
   onChange,
   label,
   error,
-  defaultCountry = 'US',
+  defaultCountry,
   placeholder = 'Enter phone number',
   onBlur,
+  className,
 }: PhoneInputProps) {
+  const [autoCountry] = useState<Country>(() => detectBrowserCountry());
+
+  const countriesList = useMemo(() => {
+    const all = getCountries();
+    const rest = all.filter((c) => c !== 'US' && c !== 'GB');
+    return ['US', 'GB', ...rest];
+  }, []);
+
   return (
-    <div className="w-full">
+    <div className="space-y-1 w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700">
           {label}
         </label>
       )}
       <PhoneInputComponent
         international
+        withCountryCallingCode
         countryCallingCodeEditable={false}
-        defaultCountry={defaultCountry}
+        defaultCountry={defaultCountry ?? autoCountry}
+        countries={countriesList}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         onBlur={onBlur}
         className={cn(
-          "phone-input-wrapper",
-          error && "phone-input-error"
+          "flex w-full rounded-lg border bg-white",
+          "px-3 py-2 text-base",
+          "focus-within:ring-2 focus-within:ring-primary",
+          error ? "border-red-500 focus-within:ring-red-200" : "border-gray-300",
+          className
         )}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
-      <style>{`
-        .phone-input-wrapper {
-          display: flex;
-          width: 100%;
-        }
-        .phone-input-wrapper .PhoneInputCountry {
-          padding: 0.75rem;
-          padding-right: 0.5rem;
-          background: #f9fafb;
-          border: 1px solid #d1d5db;
-          border-right: none;
-          border-radius: 0.5rem 0 0 0.5rem;
-        }
-        .phone-input-wrapper .PhoneInputInput {
-          flex: 1;
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0 0.5rem 0.5rem 0;
-          font-size: 1rem;
-          transition: all 0.2s;
-          background: #ffffff;
-        }
-        .phone-input-wrapper .PhoneInputInput:focus {
-          outline: none;
-          border-color: #111111;
-          box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.12);
-        }
-        .phone-input-wrapper .PhoneInputInput::placeholder {
-          color: #9ca3af;
-        }
-        .phone-input-error .PhoneInputInput {
-          border-color: #ef4444;
-        }
-        .phone-input-error .PhoneInputCountry {
-          border-color: #ef4444;
-        }
-        .phone-input-error .PhoneInputInput:focus {
-          box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
-        }
-      `}</style>
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }

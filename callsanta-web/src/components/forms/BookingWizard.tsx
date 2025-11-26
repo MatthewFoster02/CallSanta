@@ -69,7 +69,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     },
   });
 
-  const { control, handleSubmit, formState: { errors }, setValue, watch, trigger, getValues } = form;
+  const { control, handleSubmit, formState: { errors, touchedFields }, setValue, watch, trigger, getValues } = form;
   const watchedValues = watch();
 
   const preparePayment = useCallback(async (values: BookingFormData) => {
@@ -189,7 +189,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
   }, [collapsed.contact, editingSection, lastCollapsedKey.contact, trigger, watchedValues.childAge, watchedValues.childName, watchedValues.parentEmail, watchedValues.phoneNumber]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-base sm:text-lg">
       <div className="space-y-3 px-0 sm:px-0">
         <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900">Schedule &amp; Pay</h2>
         <p className="text-base sm:text-lg text-gray-600">
@@ -240,6 +240,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                       placeholder="Enter first name"
                       error={errors.childName?.message}
                       onBlur={tryAutoCollapseContact}
+                      className="w-full text-base sm:text-lg"
                     />
                   )}
                 />
@@ -255,7 +256,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                         <select
                           value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                          className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent border-gray-300 bg-white text-base"
+                          className="w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent border-gray-300 bg-white text-base sm:text-lg"
                           onBlur={tryAutoCollapseContact}
                         >
                           <option value="">Select age</option>
@@ -287,10 +288,12 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                         }
                       }}
                       label="Phone Number"
-                      error={errors.phoneNumber?.message}
-                      // fallback collapse attempt when phone loses focus
-                      // @ts-expect-error onBlur is supported by PhoneInputComponent passthrough
-                      onBlur={tryAutoCollapseContact}
+                      error={touchedFields.phoneNumber ? errors.phoneNumber?.message : undefined}
+                      onBlur={() => {
+                        field.onBlur();
+                        tryAutoCollapseContact();
+                      }}
+                      className="w-full text-base sm:text-lg"
                     />
                   )}
                 />
@@ -306,6 +309,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                       placeholder="you@example.com"
                       error={errors.parentEmail?.message}
                       onBlur={tryAutoCollapseContact}
+                      className="w-full text-base sm:text-lg"
                     />
                   )}
                 />
