@@ -188,28 +188,43 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     }
   }, [collapsed.contact, editingSection, lastCollapsedKey.contact, trigger, watchedValues.childAge, watchedValues.childName, watchedValues.parentEmail, watchedValues.phoneNumber]);
 
-  // Trigger PaymentIntent creation once required sections are completed
+  // Trigger PaymentIntent creation once required fields are valid (contact + time + email)
   useEffect(() => {
-    const ready =
-      collapsed.contact &&
-      collapsed.time &&
-      Boolean(watchedValues.parentEmail) &&
-      !bookingResult &&
-      !preparingPayment &&
-      !isSubmitting;
+    const hasRequired =
+      Boolean(watchedValues.childName) &&
+      Boolean(watchedValues.childAge) &&
+      Boolean(watchedValues.phoneNumber) &&
+      Boolean(watchedValues.scheduledAt) &&
+      Boolean(watchedValues.timezone) &&
+      Boolean(watchedValues.parentEmail);
 
-    if (!ready) return;
+    if (
+      !hasRequired ||
+      bookingResult ||
+      preparingPayment ||
+      isSubmitting
+    ) {
+      return;
+    }
 
     void tryPreparePayment();
   }, [
     bookingResult,
-    collapsed.contact,
-    collapsed.time,
     isSubmitting,
     preparingPayment,
     tryPreparePayment,
+    watchedValues.childAge,
+    watchedValues.childName,
     watchedValues.parentEmail,
+    watchedValues.phoneNumber,
+    watchedValues.scheduledAt,
+    watchedValues.timezone,
   ]);
+
+  // Fallback: if required fields become valid at any point, trigger PI (notes are ignored)
+  useEffect(() => {
+    void tryPreparePayment();
+  }, [tryPreparePayment]);
 
   return (
     <div className="space-y-8 text-base sm:text-lg">
@@ -463,7 +478,6 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                   stripe={stripePromise}
                   options={{
                     clientSecret: bookingResult.clientSecret,
-                    appearance: { theme: 'flat', variables: { colorPrimaryText: '#111' } },
                   }}
                 >
                   <div className="space-y-3">
