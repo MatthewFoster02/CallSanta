@@ -143,6 +143,19 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     return result;
   };
 
+  const preparePaymentManually = async () => {
+    setPreparingPayment(true);
+    setWalletError(null);
+    try {
+      await submitBookingIfNeeded();
+    } catch (error) {
+      console.error('Manual payment preparation failed:', error);
+      setWalletError(error instanceof Error ? error.message : 'Unable to prepare payment.');
+    } finally {
+      setPreparingPayment(false);
+    }
+  };
+
   const handleCheckoutRedirect = async () => {
     const isValid = await form.trigger();
     if (!isValid) return;
@@ -173,7 +186,19 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
         <div className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-3">
           {preparingPayment
             ? 'Preparing Apple Pay / Google Pay options...'
-            : 'Complete the form to see payment options.'}
+            : (
+              <div className="flex items-center justify-between gap-3">
+                <span>Payment options will appear after we create your booking.</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={preparePaymentManually}
+                  disabled={preparingPayment}
+                >
+                  Refresh
+                </Button>
+              </div>
+            )}
         </div>
       );
     }
