@@ -40,10 +40,11 @@ export function PhoneInput({
 }: PhoneInputProps) {
   const [autoCountry] = useState<Country>(() => detectBrowserCountry());
 
-  const countriesList = useMemo(() => {
+  const countriesList = useMemo<Country[]>(() => {
     const all = getCountries();
-    const rest = all.filter((c) => c !== 'US' && c !== 'GB');
-    return ['US', 'GB', ...rest];
+    const prioritized: Country[] = ['US', 'GB'];
+    const rest = all.filter((c) => !prioritized.includes(c));
+    return [...prioritized, ...rest];
   }, []);
 
   return (
