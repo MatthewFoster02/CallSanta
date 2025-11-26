@@ -21,7 +21,12 @@ import {
   Loader2
 } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, ExpressCheckoutElement } from '@stripe/react-stripe-js';
+import {
+  Elements,
+  ExpressCheckoutElement,
+  useElements,
+  useStripe,
+} from '@stripe/react-stripe-js';
 
 const STEPS = [
   { id: 1, title: "Child's Info", icon: User },
@@ -53,6 +58,10 @@ interface BookingWizardProps {
     recordingPrice: number;
   };
 }
+
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
 export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -203,13 +212,22 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
       );
     }
 
-    const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+    if (!stripePromise) {
+      return (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
+          Stripe failed to initialize. Please refresh and try again.
+        </div>
+      );
+    }
 
     return (
       <Elements
         stripe={stripePromise}
         options={{
           clientSecret: bookingResult.clientSecret,
+          mode: 'payment',
+          amount: bookingResult.amount,
+          currency: bookingResult.currency,
           appearance: {
             theme: 'flat',
             variables: { borderRadius: '12px' },
@@ -217,39 +235,11 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
         }}
       >
         <div className="space-y-3">
-          <ExpressCheckoutElement
-            onReady={({ availablePaymentMethods }) => {
-              setExpressReady(Boolean(availablePaymentMethods));
-            }}
-            onConfirm={async (event) => {
-              setIsSubmitting(true);
-              setWalletError(null);
-              try {
-                const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-                if (!stripe) {
-                  throw new Error('Failed to initialize Stripe');
-                }
-                const { error } = await stripe.confirmPayment({
-                  clientSecret: bookingResult.clientSecret,
-                  confirmParams: {
-                    return_url: `${window.location.origin}/success?call_id=${bookingResult.callId}`,
-                  },
-                  redirect: 'if_required',
-                });
-                if (error) {
-                  event.paymentFailed?.({ reason: 'fail' });
-                  setWalletError(error.message || 'Payment failed. Please try again.');
-                  setIsSubmitting(false);
-                  return;
-                }
-                window.location.href = `/success?call_id=${bookingResult.callId}`;
-              } catch (err) {
-                console.error('Express checkout error:', err);
-                event.paymentFailed?.({ reason: 'fail' });
-                setWalletError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
-                setIsSubmitting(false);
-              }
-            }}
+          <ExpressCheckoutWrapper
+            bookingResult={bookingResult}
+            setWalletError={setWalletError}
+            setIsSubmitting={setIsSubmitting}
+            setExpressReady={setExpressReady}
           />
           {!expressReady && (
             <p className="text-sm text-gray-500">
@@ -717,6 +707,66 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
         </div>
       </Card>
     </div>
+  );
+}
+
+function ExpressCheckoutWrapper({
+  bookingResult,
+  setWalletError,
+  setIsSubmitting,
+  setExpressReady,
+}: {
+  bookingResult: {
+    callId: string;
+    clientSecret: string;
+  };
+  setWalletError: (value: string | null) => void;
+  setIsSubmitting: (value: boolean) => void;
+  setExpressReady: (value: boolean) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+
+  return (
+    <ExpressCheckoutElement
+      onReady={({ availablePaymentMethods }) => {
+        setExpressReady(Boolean(availablePaymentMethods));
+      }}
+      onConfirm={async (event) => {
+        if (!stripe || !elements) {
+          event.paymentFailed?.({ reason: 'fail' });
+          setWalletError('Payment is not ready yet. Please try again.');
+          return;
+        }
+
+        setIsSubmitting(true);
+        setWalletError(null);
+        try {
+          const { error } = await stripe.confirmPayment({
+            elements,
+            clientSecret: bookingResult.clientSecret,
+            confirmParams: {
+              return_url: `${window.location.origin}/success?call_id=${bookingResult.callId}`,
+            },
+            redirect: 'if_required',
+          });
+
+          if (error) {
+            event.paymentFailed?.({ reason: 'fail' });
+            setWalletError(error.message || 'Payment failed. Please try again.');
+            setIsSubmitting(false);
+            return;
+          }
+
+          window.location.href = `/success?call_id=${bookingResult.callId}`;
+        } catch (err) {
+          console.error('Express checkout error:', err);
+          event.paymentFailed?.({ reason: 'fail' });
+          setWalletError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+          setIsSubmitting(false);
+        }
+      }}
+    />
   );
 }
 
