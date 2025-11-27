@@ -18,7 +18,6 @@ const ALLOWED_AUDIO_TYPES = [
 
 const DEFAULT_CHILD_GENDER = 'unspecified';
 const DEFAULT_CHILD_NATIONALITY = 'not_provided';
-const DEFAULT_CHILD_AGE = 0; // fallback for optional age
 const DEFAULT_GIFT_BUDGET = 0;
 
 export async function POST(request: NextRequest) {
@@ -56,7 +55,6 @@ export async function POST(request: NextRequest) {
 
     const validated = validationResult.data;
     const purchaseRecording = validated.purchaseRecording ?? false;
-    const normalizedAge = validated.childAge ?? DEFAULT_CHILD_AGE;
 
     // 3. Process voice file (if present)
     let voiceUrl: string | null = null;
@@ -136,7 +134,7 @@ export async function POST(request: NextRequest) {
       .from('calls')
       .insert({
         child_name: validated.childName,
-        child_age: normalizedAge,
+        child_age: validated.childAge,
         child_gender: DEFAULT_CHILD_GENDER,
         child_nationality: DEFAULT_CHILD_NATIONALITY,
         child_info_text: validated.childInfoText || null,
@@ -161,7 +159,7 @@ export async function POST(request: NextRequest) {
     if (insertError || !call) {
       console.error('Call insert error:', insertError);
       return NextResponse.json(
-        { error: 'Failed to create booking' },
+        { error: 'Failed to create booking', details: insertError?.message },
         { status: 500 }
       );
     }
@@ -202,7 +200,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Unexpected error in POST /api/calls:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }

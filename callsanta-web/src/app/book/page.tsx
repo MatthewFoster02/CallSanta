@@ -35,7 +35,16 @@ async function handleBookingSubmit(
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create booking');
+    let message = 'Failed to create booking';
+    try {
+      const err = await response.json();
+      if (err?.error || err?.details) {
+        message = `${err.error || message}${err.details ? `: ${err.details}` : ''}`;
+      }
+    } catch {
+      /* ignore json parse errors */
+    }
+    throw new Error(message);
   }
 
   return response.json();

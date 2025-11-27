@@ -316,11 +316,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                         field.onBlur();
                         void tryAutoCollapseContact();
                       }}
-                      error={
-                        (!field.value && touchedFields.childAge)
-                          ? 'Age helps Santa tailor the call (optional)'
-                          : errors.childAge?.message
-                      }
+                      error={errors.childAge?.message}
                       className="w-full text-base sm:text-lg"
                     />
                   )}
