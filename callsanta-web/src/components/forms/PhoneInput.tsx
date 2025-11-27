@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import PhoneInputComponent, { Country } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -38,7 +39,13 @@ export function PhoneInput({
   onBlur,
   className,
 }: PhoneInputProps) {
-  const [autoCountry] = useState<Country>(() => detectBrowserCountry());
+  // Use a stable default for SSR, then update on the client to avoid hydration mismatch.
+  const [autoCountry, setAutoCountry] = useState<Country>('US');
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    setAutoCountry(detectBrowserCountry());
+  }, []);
 
   const countriesList = useMemo<Country[]>(() => {
     const all = getCountries();
