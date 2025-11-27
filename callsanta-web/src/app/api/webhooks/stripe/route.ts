@@ -124,19 +124,35 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     });
 
     // Fetch the call to send confirmation email
-    const { data: call } = await supabaseAdmin
+    const { data: call, error: fetchCallError } = await supabaseAdmin
       .from('calls')
       .select('*')
       .eq('id', callId)
       .single();
 
+    console.log('[Stripe] Fetched call for booking confirmation:', call ? {
+      id: call.id,
+      parent_email: call.parent_email,
+      child_name: call.child_name,
+    } : 'null');
+
+    if (fetchCallError) {
+      console.error('[Stripe] Error fetching call for confirmation email:', fetchCallError);
+    }
+
     if (call) {
-      await sendBookingConfirmationEmail(call);
-      await logCallEvent(callId, 'booking_confirmation_email_sent', {});
+      console.log('[Stripe] Sending booking confirmation email...');
+      const emailResult = await sendBookingConfirmationEmail(call);
+      console.log('[Stripe] Booking confirmation email result:', emailResult);
+      await logCallEvent(callId, 'booking_confirmation_email_sent', {
+        email_result: emailResult,
+      });
+    } else {
+      console.error('[Stripe] No call found to send confirmation email');
     }
   }
 
-  console.log(`Checkout completed for call ${callId}`);
+  console.log(`[Stripe] Checkout completed for call ${callId}`);
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {

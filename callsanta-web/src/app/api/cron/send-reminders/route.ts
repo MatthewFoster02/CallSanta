@@ -42,8 +42,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (!calls || calls.length === 0) {
+      console.log('[Cron] No calls found for reminders');
       return NextResponse.json({ processed: 0, message: 'No reminders to send' });
     }
+
+    console.log(`[Cron] Found ${calls.length} calls for reminders`);
 
     const results: Array<{
       callId: string;
@@ -53,6 +56,15 @@ export async function GET(request: NextRequest) {
 
     for (const call of calls as Call[]) {
       try {
+        console.log('[Cron] Processing call:', JSON.stringify({
+          id: call.id,
+          child_name: call.child_name,
+          parent_email: call.parent_email,
+          scheduled_at: call.scheduled_at,
+          call_status: call.call_status,
+          payment_status: call.payment_status,
+        }, null, 2));
+
         // Check if reminder already sent by looking for event
         const { data: existingEvent } = await supabaseAdmin
           .from('call_events')
@@ -62,10 +74,11 @@ export async function GET(request: NextRequest) {
           .single();
 
         if (existingEvent) {
-          console.log(`Reminder already sent for call ${call.id}, skipping`);
+          console.log(`[Cron] Reminder already sent for call ${call.id}, skipping`);
           continue;
         }
 
+        console.log(`[Cron] Sending reminder email for call ${call.id}`);
         // Send the reminder email
         const emailResult = await sendOneHourReminderEmail(call);
 

@@ -12,6 +12,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Santa <santa@santasnumber.com>';
 
+// Log EMAIL_FROM on module load for debugging
+console.log('[Email] EMAIL_FROM configured as:', EMAIL_FROM);
+console.log('[Email] EMAIL_FROM env var raw:', process.env.EMAIL_FROM);
+
 interface EmailResult {
   success: boolean;
   id?: string;
@@ -23,23 +27,31 @@ interface EmailResult {
  */
 export async function sendBookingConfirmationEmail(call: Call): Promise<EmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
+    const emailPayload = {
       from: EMAIL_FROM,
       to: call.parent_email,
       subject: `Ho Ho Ho! Santa Call Confirmed for ${call.child_name}!`,
+    };
+
+    console.log('[Email] sendBookingConfirmationEmail - Payload:', JSON.stringify(emailPayload, null, 2));
+    console.log('[Email] sendBookingConfirmationEmail - Call ID:', call.id);
+    console.log('[Email] sendBookingConfirmationEmail - parent_email:', call.parent_email);
+
+    const { data, error } = await resend.emails.send({
+      ...emailPayload,
       html: bookingConfirmationTemplate(call),
     });
 
     if (error) {
-      console.error('Failed to send booking confirmation email:', error);
+      console.error('[Email] sendBookingConfirmationEmail - Resend error:', JSON.stringify(error, null, 2));
       return { success: false, error: error.message };
     }
 
-    console.log(`Booking confirmation email sent for call ${call.id}`);
+    console.log(`[Email] Booking confirmation email sent for call ${call.id}, email_id: ${data?.id}`);
     return { success: true, id: data?.id };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Error sending booking confirmation email:', errorMessage);
+    console.error('[Email] sendBookingConfirmationEmail - Exception:', errorMessage);
     return { success: false, error: errorMessage };
   }
 }
@@ -49,23 +61,32 @@ export async function sendBookingConfirmationEmail(call: Call): Promise<EmailRes
  */
 export async function sendOneHourReminderEmail(call: Call): Promise<EmailResult> {
   try {
-    const { data, error } = await resend.emails.send({
+    const emailPayload = {
       from: EMAIL_FROM,
       to: call.parent_email,
       subject: `Reminder: Santa is calling ${call.child_name} in 1 hour!`,
+    };
+
+    console.log('[Email] sendOneHourReminderEmail - Payload:', JSON.stringify(emailPayload, null, 2));
+    console.log('[Email] sendOneHourReminderEmail - Call ID:', call.id);
+    console.log('[Email] sendOneHourReminderEmail - parent_email:', call.parent_email);
+    console.log('[Email] sendOneHourReminderEmail - scheduled_at:', call.scheduled_at);
+
+    const { data, error } = await resend.emails.send({
+      ...emailPayload,
       html: oneHourReminderTemplate(call),
     });
 
     if (error) {
-      console.error('Failed to send reminder email:', error);
+      console.error('[Email] sendOneHourReminderEmail - Resend error:', JSON.stringify(error, null, 2));
       return { success: false, error: error.message };
     }
 
-    console.log(`One hour reminder email sent for call ${call.id}`);
+    console.log(`[Email] One hour reminder email sent for call ${call.id}, email_id: ${data?.id}`);
     return { success: true, id: data?.id };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Error sending reminder email:', errorMessage);
+    console.error('[Email] sendOneHourReminderEmail - Exception:', errorMessage);
     return { success: false, error: errorMessage };
   }
 }
