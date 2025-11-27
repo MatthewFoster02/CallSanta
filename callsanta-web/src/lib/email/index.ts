@@ -3,7 +3,6 @@ import { Call } from '@/types/database';
 import {
   bookingConfirmationTemplate,
   oneHourReminderTemplate,
-  postCallWithoutRecordingTemplate,
   postCallWithRecordingTemplate,
   recordingPurchaseConfirmationTemplate,
 } from './templates';
@@ -11,7 +10,7 @@ import {
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const EMAIL_FROM = process.env.EMAIL_FROM || 'Santa <santa@callsanta.com>';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Santa <santa@santasnumber.com>';
 
 interface EmailResult {
   success: boolean;
@@ -72,18 +71,13 @@ export async function sendOneHourReminderEmail(call: Call): Promise<EmailResult>
 }
 
 /**
- * Send post-call email with transcript
- * Automatically chooses template based on recording_purchased status
+ * Send post-call email with transcript and recording download link
  */
 export async function sendPostCallEmail(call: Call): Promise<EmailResult> {
   try {
-    const template = call.recording_purchased
-      ? postCallWithRecordingTemplate(call)
-      : postCallWithoutRecordingTemplate(call);
-
-    const subject = call.recording_purchased
-      ? `Santa's Call with ${call.child_name} - Recording Ready!`
-      : `Here's What Santa Said to ${call.child_name}!`;
+    // Recording is now always included, use consistent template
+    const template = postCallWithRecordingTemplate(call);
+    const subject = `Santa's Call with ${call.child_name} - Recording Ready!`;
 
     const { data, error } = await resend.emails.send({
       from: EMAIL_FROM,

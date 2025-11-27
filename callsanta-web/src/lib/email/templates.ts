@@ -108,12 +108,10 @@ export function bookingConfirmationTemplate(call: Call): string {
             <td style="padding: 8px 0; color: #666;">Phone Number:</td>
             <td style="padding: 8px 0; color: #333; font-weight: 500;">${call.phone_number}</td>
           </tr>
-          ${call.recording_purchased ? `
           <tr>
             <td style="padding: 8px 0; color: #666;">Recording:</td>
             <td style="padding: 8px 0; color: #165B33; font-weight: 500;">&#10003; Included</td>
           </tr>
-          ` : ''}
         </table>
       </div>
 
@@ -122,16 +120,8 @@ export function bookingConfirmationTemplate(call: Call): string {
       <ol style="color: #555; line-height: 1.8; padding-left: 20px;">
         <li style="margin-bottom: 10px;">Make sure the phone is available at the scheduled time</li>
         <li style="margin-bottom: 10px;">Santa will call from our special North Pole number</li>
-        <li style="margin-bottom: 10px;">After the call, you'll receive a transcript by email${call.recording_purchased ? ' along with the recording' : ''}</li>
+        <li style="margin-bottom: 10px;">After the call, you'll receive a transcript and recording by email</li>
       </ol>
-
-      ${!call.recording_purchased ? `
-      <div style="background: #165B33; color: #ffffff; padding: 24px; border-radius: 12px; margin-top: 30px; text-align: center;">
-        <p style="margin: 0 0 8px; font-size: 14px; opacity: 0.9;">Don't forget!</p>
-        <p style="margin: 0 0 16px; font-size: 16px; font-weight: bold;">You can still add a call recording for just $4.99</p>
-        <p style="margin: 0; font-size: 14px; opacity: 0.9;">Available after the call is complete</p>
-      </div>
-      ` : ''}
 
       <hr style="${styles.divider}">
 
@@ -189,22 +179,22 @@ export function oneHourReminderTemplate(call: Call): string {
 
 /**
  * Post-Call Email - Without Recording Purchased
- * Includes transcript and upsell for recording
+ * Includes transcript and download link
  */
 export function postCallWithoutRecordingTemplate(call: Call): string {
-  const purchaseUrl = `${APP_URL}/recording/${call.id}/purchase`;
+  const downloadUrl = `${APP_URL}/recording/${call.id}`;
 
   const content = `
     <div style="${styles.header}">
       <span style="${styles.snowflake}">&#127877;</span>
       <h1 style="${styles.headerTitle}">Santa Called ${call.child_name}!</h1>
-      <p style="${styles.headerSubtitle}">Here's what they talked about</p>
+      <p style="${styles.headerSubtitle}">Your recording is ready to download</p>
     </div>
 
     <div style="${styles.content}">
       <p style="font-size: 16px; color: #333; line-height: 1.6;">
         Ho ho ho! Santa just finished a wonderful conversation with ${call.child_name}!
-        Below you'll find the full transcript of their magical chat.
+        Below you'll find the full transcript and a link to download the recording.
       </p>
 
       ${call.call_duration_seconds ? `
@@ -213,22 +203,16 @@ export function postCallWithoutRecordingTemplate(call: Call): string {
       </p>
       ` : ''}
 
+      <div style="background: #165B33; color: #ffffff; padding: 24px; border-radius: 12px; margin: 24px 0; text-align: center;">
+        <p style="margin: 0 0 16px; font-size: 14px; opacity: 0.9;">&#127908; Your Recording is Ready!</p>
+        <a href="${downloadUrl}" style="${styles.button}; background: #FFD700; color: #333;">
+          Download Recording
+        </a>
+      </div>
+
       <div style="background: #f8f9fa; border-left: 4px solid #C41E3A; padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0;">
         <h3 style="margin: 0 0 16px; color: #C41E3A; font-size: 16px;">&#128221; Call Transcript</h3>
         <div style="color: #444; line-height: 1.8; white-space: pre-wrap; font-size: 14px;">${call.transcript || 'Transcript will be available shortly...'}</div>
-      </div>
-
-      <div style="background: linear-gradient(135deg, #165B33 0%, #0D3D22 100%); color: #ffffff; padding: 32px; border-radius: 12px; margin: 30px 0; text-align: center;">
-        <h2 style="margin: 0 0 12px; font-size: 22px;">&#127908; Want to Keep This Memory Forever?</h2>
-        <p style="margin: 0 0 24px; font-size: 16px; opacity: 0.9;">
-          Purchase the audio recording of Santa's call with ${call.child_name} for just $4.99
-        </p>
-        <a href="${purchaseUrl}" style="${styles.button}; background: #FFD700; color: #333;">
-          Get the Recording
-        </a>
-        <p style="margin: 16px 0 0; font-size: 12px; opacity: 0.7;">
-          Download and keep forever, share with family!
-        </p>
       </div>
 
       <p style="text-align: center; color: #888; font-size: 14px;">
