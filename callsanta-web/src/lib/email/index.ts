@@ -10,11 +10,47 @@ import {
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const EMAIL_FROM = process.env.EMAIL_FROM || 'Santa <santa@santasnumber.com>';
+// Hardcode the email to avoid any env var issues
+// The env var might have invisible characters or encoding issues
+const DEFAULT_EMAIL_FROM = 'Santa <santa@santasnumber.com>';
 
-// Log EMAIL_FROM on module load for debugging
-console.log('[Email] EMAIL_FROM configured as:', EMAIL_FROM);
-console.log('[Email] EMAIL_FROM env var raw:', process.env.EMAIL_FROM);
+function getEmailFrom(): string {
+  const envValue = process.env.EMAIL_FROM;
+
+  // Log for debugging
+  console.log('[Email] EMAIL_FROM env var raw value:', JSON.stringify(envValue));
+  console.log('[Email] EMAIL_FROM env var length:', envValue?.length);
+
+  // If env var is empty, undefined, or has issues, use hardcoded default
+  if (!envValue || envValue.trim() === '') {
+    console.log('[Email] Using hardcoded default:', DEFAULT_EMAIL_FROM);
+    return DEFAULT_EMAIL_FROM;
+  }
+
+  // Strip quotes if present (common mistake when setting env vars)
+  // Also trim whitespace
+  let cleaned = envValue.trim();
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+      (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1);
+    console.log('[Email] Stripped quotes from EMAIL_FROM:', cleaned);
+  }
+
+  // Validate the format: should be "Name <email@domain.com>" or "email@domain.com"
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const namedEmailRegex = /^.+\s*<[^\s@]+@[^\s@]+\.[^\s@]+>$/;
+
+  if (emailRegex.test(cleaned) || namedEmailRegex.test(cleaned)) {
+    console.log('[Email] Using validated env var:', cleaned);
+    return cleaned;
+  }
+
+  console.warn('[Email] Invalid EMAIL_FROM format, using default. Got:', JSON.stringify(cleaned));
+  return DEFAULT_EMAIL_FROM;
+}
+
+const EMAIL_FROM = getEmailFrom();
+console.log('[Email] Final EMAIL_FROM:', EMAIL_FROM);
 
 interface EmailResult {
   success: boolean;
