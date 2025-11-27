@@ -12,7 +12,6 @@ export function Footer() {
           Crafted with love from the North Pole. Share the magic, spread the joy.
         </p>
         <p className="text-sm text-white/70">
-          Created by Sebastian Kot &amp; Matthew Foster
         </p>
       </div>
     </footer>
