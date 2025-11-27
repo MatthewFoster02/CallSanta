@@ -448,13 +448,14 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
             <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm text-gray-700">
-                  Prefer voice? Add a quick note.
+                  Want to speak not type? Add a quick voice note instead.
                 </div>
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
-                  className="bg-black text-white hover:bg-gray-800"
+                  className="shadow-lg hover:shadow-xl bg-[#c41e3a] text-white hover:bg-[#a01830] focus:ring-red-400"
+                  style={{ backgroundColor: '#C41E3A', color: 'white' }}
                   onClick={() => setShowVoice((prev) => !prev)}
                   aria-label={showVoice ? 'Hide voice recorder' : 'Add voice note'}
                 >

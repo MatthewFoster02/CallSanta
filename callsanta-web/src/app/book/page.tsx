@@ -9,8 +9,8 @@ import Image from 'next/image';
 
 // Pricing in cents
 const PRICING = {
-  basePrice: 999, // $9.99
-  recordingPrice: 499, // $4.99
+  basePrice: 299, // $2.99
+  recordingPrice: 299, // $2.99
 };
 
 async function handleBookingSubmit(

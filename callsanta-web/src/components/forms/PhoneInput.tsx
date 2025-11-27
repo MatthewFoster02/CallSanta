@@ -20,9 +20,46 @@ export interface PhoneInputProps {
 
 function detectBrowserCountry(): Country {
   try {
-    const locale = typeof navigator !== 'undefined' ? navigator.language || "en-US" : "en-US";
-    const region = locale.split("-")[1];
-    if (region && region.length === 2) return region as Country;
+    if (typeof navigator === 'undefined') return "US";
+
+    // Prefer explicit language-region from the browser
+    const locales = navigator.languages?.length ? navigator.languages : [navigator.language];
+    for (const loc of locales) {
+      const parts = loc.split('-');
+      const region = parts[1];
+      if (region && region.length === 2) return region as Country;
+    }
+
+    // Fallback: map timezone to a likely country
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tzMap: Record<string, Country> = {
+      'America/New_York': 'US',
+      'America/Chicago': 'US',
+      'America/Denver': 'US',
+      'America/Los_Angeles': 'US',
+      'America/Toronto': 'CA',
+      'Europe/London': 'GB',
+      'Europe/Paris': 'FR',
+      'Europe/Berlin': 'DE',
+      'Europe/Madrid': 'ES',
+      'Europe/Rome': 'IT',
+      'Europe/Warsaw': 'PL',
+      'Europe/Dublin': 'IE',
+      'Europe/Amsterdam': 'NL',
+      'Europe/Brussels': 'BE',
+      'Europe/Zurich': 'CH',
+      'Europe/Stockholm': 'SE',
+      'Europe/Oslo': 'NO',
+      'Asia/Tokyo': 'JP',
+      'Asia/Seoul': 'KR',
+      'Asia/Kolkata': 'IN',
+      'Asia/Singapore': 'SG',
+      'Asia/Hong_Kong': 'HK',
+      'Asia/Dubai': 'AE',
+      'Australia/Sydney': 'AU',
+      'Pacific/Auckland': 'NZ',
+    };
+    if (tz && tzMap[tz]) return tzMap[tz];
   } catch {
     /* ignore */
   }
@@ -40,14 +77,15 @@ export function PhoneInput({
   className,
 }: PhoneInputProps) {
   // Track selected country explicitly so it doesn't disappear on re-renders/collapse.
-  const [country, setCountry] = useState<Country | undefined>(defaultCountry ?? 'US');
+  const [country, setCountry] = useState<Country | undefined>(defaultCountry);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    // Only set detected country if no explicit default already provided/selected
+    // Only set detected country if no explicit default provided
+    if (defaultCountry) return;
     const detected = detectBrowserCountry();
-    setCountry((prev) => prev ?? detected);
-  }, []);
+    setCountry(detected);
+  }, [defaultCountry]);
 
   // Respect updates to defaultCountry prop (if provided)
   useEffect(() => {

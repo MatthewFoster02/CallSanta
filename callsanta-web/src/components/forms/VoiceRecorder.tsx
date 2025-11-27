@@ -191,7 +191,7 @@ export function VoiceRecorder({
                 type="button"
                 onClick={playPause}
                 className="inline-flex items-center justify-center w-12 h-12 rounded-full transition-colors hover:opacity-90"
-                style={{ backgroundColor: '#165B33', color: 'white' }}
+                style={{ backgroundColor: '#C41E3A', color: 'white' }}
               >
                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
               </button>
