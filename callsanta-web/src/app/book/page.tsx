@@ -5,6 +5,7 @@ import { BookingWizard } from '@/components/forms';
 import { BookingFormData } from '@/lib/schemas/booking';
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { Footer } from '@/components/layout';
 import Image from 'next/image';
 
 // Pricing in cents
@@ -94,6 +95,8 @@ export default function BookPage() {
 
         {/* Bottom snow accumulation effect */}
         <div className="fixed bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none z-10" />
+
+        <Footer />
       </div>
     </div>
   );
