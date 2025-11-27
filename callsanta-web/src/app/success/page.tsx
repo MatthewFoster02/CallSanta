@@ -190,7 +190,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
                     1
                   </span>
                   <span>
-                    At the specified time, Santa will call this number. Please answer and give the phone to your child, or put it on speaker!
+                    At the scheduled time, Santa will call this number. Please answer and give the phone to your child — or enjoy a fun surprise if you’re calling a friend!
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -198,7 +198,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
                     2
                   </span>
                   <span>
-                    Santa will talk to your child and figure out what they want for Christmas.
+                    Santa will talk to the person who answers and ask about wishes, gifts, and holiday plans.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -206,23 +206,16 @@ export default async function SuccessPage({ searchParams }: PageProps) {
                     3
                   </span>
                   <span>
-                    After the call, we will send you a Christmas list by email, with an option to download a cute recording for 48 hours before we delete it.
+                    After the call, we will send you a christmas wishlist email with an optional download link to the recording (available for 48 hours before deletion).
                   </span>
                 </li>
               </ol>
 
               <p className="text-sm text-gray-800 font-medium mt-6">
-                📞 Missed the call? No worries! Email{" "}
-                <a href="mailto:questions@santasnumber.com" className="text-[#c41e3a] underline">
-                  questions@santasnumber.com
-                </a>{" "}
-                and we’ll help reschedule within 24 hours.
+                📞 Missed the call? No worries! Email questions@santasnumber.com and we’ll help reschedule within 24 hours.
               </p>
               <p className="text-xs text-gray-500 mt-4">
-                Any questions about data handling?{" "}
-                <a href="mailto:questions@santasnumber.com" className="text-[#c41e3a] underline">
-                  questions@santasnumber.com
-                </a>
+                🔐 Curious about how we handle your data? Email questions@santasnumber.com and we’ll be happy to explain.
               </p>
             </div>
 

@@ -292,7 +292,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      label="Child's Name"
+                      label="Recipient's Name"
                       placeholder="Enter first name"
                       error={errors.childName?.message}
                       onBlur={tryAutoCollapseContact}
@@ -338,7 +338,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                           }
                         }
                       }}
-                      label="Phone Number"
+                      label="Recipient Phone Number"
                       error={touchedFields.phoneNumber ? errors.phoneNumber?.message : undefined}
                       onBlur={() => {
                         field.onBlur();
@@ -436,7 +436,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                   <textarea
                     {...field}
                     rows={4}
-                    placeholder="Interests, wins, anything Santa should mention."
+                    placeholder="Interests or anything Santa should mention."
                     className="w-full px-4 py-3 rounded-lg border transition-colors resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 border-gray-300 bg-white"
                     onBlur={field.onBlur}
                     onChange={field.onChange}
