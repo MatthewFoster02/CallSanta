@@ -3,8 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Call Santa - A Magical Phone Call from the North Pole",
-  description: "Give your child the gift of a lifetime - a real phone call from Santa Claus! Personalized, magical, and unforgettable.",
+  title: "Sant is calling!",
+  description: "Our real santa will call a number, ask your child or friend about their wishlist and then email it to you!",
 };
 
 const playfair = Playfair_Display({ 
