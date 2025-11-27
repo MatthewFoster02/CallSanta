@@ -12,6 +12,7 @@ export function Footer() {
           Crafted with love from the North Pole. Share the magic, spread the joy.
         </p>
         <p className="text-sm text-white/70">
+        questions@santasnumber.com
         </p>
       </div>
     </footer>
