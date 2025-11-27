@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { DollarSign, Gift } from 'lucide-react';
+import { useMemo } from 'react';
+import { Gift } from 'lucide-react';
 
 interface BudgetSliderProps {
   value: number;
@@ -42,19 +42,14 @@ export function BudgetSlider({
   max = 1000,
   step = 25,
 }: BudgetSliderProps) {
-  const [localValue, setLocalValue] = useState(value || 0);
-
-  useEffect(() => {
-    setLocalValue(value || 0);
-  }, [value]);
+  const sliderValue = useMemo(() => (Number.isFinite(value) ? value : 0), [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(e.target.value);
-    setLocalValue(newValue);
     onChange(newValue);
   };
 
-  const percentage = ((localValue - min) / (max - min)) * 100;
+  const percentage = ((sliderValue - min) / (max - min)) * 100;
 
   return (
     <div className="w-full">
@@ -72,17 +67,17 @@ export function BudgetSlider({
             <span className="text-sm text-gray-600">Gift Budget Guidance</span>
           </div>
           <div className="flex items-center gap-1 text-2xl">
-            <span>{getBudgetEmoji(localValue)}</span>
+            <span>{getBudgetEmoji(sliderValue)}</span>
           </div>
         </div>
 
         {/* Value Display */}
         <div className="text-center mb-6">
           <div className="inline-flex items-baseline gap-1">
-            {localValue > 0 ? (
+            {sliderValue > 0 ? (
               <>
                 <span className="text-4xl font-bold" style={{ color: '#C41E3A' }}>
-                  ${localValue}
+                  ${sliderValue}
                 </span>
                 <span className="text-lg text-gray-500">max</span>
               </>
@@ -92,7 +87,7 @@ export function BudgetSlider({
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-1">{getBudgetLabel(localValue)}</p>
+          <p className="text-sm text-gray-500 mt-1">{getBudgetLabel(sliderValue)}</p>
         </div>
 
         {/* Slider */}
@@ -102,7 +97,7 @@ export function BudgetSlider({
             min={min}
             max={max}
             step={step}
-            value={localValue}
+            value={sliderValue}
             onChange={handleChange}
             className="w-full h-3 rounded-full appearance-none cursor-pointer"
             style={{
