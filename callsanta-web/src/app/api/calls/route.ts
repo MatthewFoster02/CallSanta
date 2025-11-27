@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { bookingSchema } from '@/lib/schemas/booking';
-import { createCheckoutSession } from '@/lib/stripe';
+import { createCheckoutSession, createPaymentIntent } from '@/lib/stripe';
 import { transcribeAudio } from '@/lib/transcription';
 import { v4 as uuid } from 'uuid';
 import { Call } from '@/types/database';
@@ -15,6 +15,10 @@ const ALLOWED_AUDIO_TYPES = [
   'audio/mpeg',
   'audio/ogg',
 ];
+
+const DEFAULT_CHILD_GENDER = 'unspecified';
+const DEFAULT_CHILD_NATIONALITY = 'not_provided';
+const DEFAULT_GIFT_BUDGET = 0;
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,6 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     const validated = validationResult.data;
+    const purchaseRecording = validated.purchaseRecording ?? false;
 
     // 3. Process voice file (if present)
     let voiceUrl: string | null = null;
@@ -121,9 +126,7 @@ export async function POST(request: NextRequest) {
 
     // 5. Calculate amounts
     const baseAmount = pricing.base_price_cents;
-    const recordingAmount = validated.purchaseRecording
-      ? pricing.recording_addon_cents
-      : 0;
+    const recordingAmount = purchaseRecording ? pricing.recording_addon_cents : 0;
     const totalAmount = baseAmount + recordingAmount;
 
     // 6. Insert call record into database
@@ -132,8 +135,8 @@ export async function POST(request: NextRequest) {
       .insert({
         child_name: validated.childName,
         child_age: validated.childAge,
-        child_gender: validated.childGender,
-        child_nationality: validated.childNationality,
+        child_gender: DEFAULT_CHILD_GENDER,
+        child_nationality: DEFAULT_CHILD_NATIONALITY,
         child_info_text: validated.childInfoText || null,
         child_info_voice_url: voiceUrl,
         child_info_voice_transcript: voiceTranscript,
@@ -141,11 +144,11 @@ export async function POST(request: NextRequest) {
         phone_country_code: validated.phoneCountryCode,
         scheduled_at: validated.scheduledAt,
         timezone: validated.timezone,
-        gift_budget: validated.giftBudget,
+        gift_budget: DEFAULT_GIFT_BUDGET,
         parent_email: validated.parentEmail,
         base_amount_cents: baseAmount,
-        recording_purchased: validated.purchaseRecording,
-        recording_amount_cents: recordingAmount || null,
+        recording_purchased: purchaseRecording,
+        recording_amount_cents: purchaseRecording ? recordingAmount : null,
         total_amount_cents: totalAmount,
         payment_status: 'pending',
         call_status: 'pending',
@@ -156,32 +159,51 @@ export async function POST(request: NextRequest) {
     if (insertError || !call) {
       console.error('Call insert error:', insertError);
       return NextResponse.json(
-        { error: 'Failed to create booking' },
+        { error: 'Failed to create booking', details: insertError?.message },
         { status: 500 }
       );
     }
 
-    // 7. Create Stripe checkout session (placeholder for now)
-    const checkoutResult = await createCheckoutSession(
-      call as Call,
-      validated.purchaseRecording
-    );
+    // 7. Create Stripe PaymentIntent for in-app wallets
+    const currency = pricing.currency || 'usd';
+    const paymentIntent = await createPaymentIntent({
+      call: call as Call,
+      includeRecording: purchaseRecording,
+      amountCents: totalAmount,
+      currency,
+    });
 
-    // 8. Update call with Stripe session ID
+    if (!paymentIntent.client_secret) {
+      throw new Error('Missing client secret on payment intent');
+    }
+
+    // 8. Create legacy Stripe Checkout session as fallback
+    const checkoutResult = await createCheckoutSession(call as Call, purchaseRecording);
+
+    // 9. Update call with Stripe IDs
     await supabaseAdmin
       .from('calls')
-      .update({ stripe_checkout_session_id: checkoutResult.sessionId })
+      .update({
+        stripe_payment_intent_id: paymentIntent.id,
+        stripe_checkout_session_id: checkoutResult.sessionId,
+      })
       .eq('id', call.id);
 
-    // 9. Return success response
+    // 10. Return success response
     return NextResponse.json({
       callId: call.id,
+      clientSecret: paymentIntent.client_secret,
+      amount: totalAmount,
+      currency,
       checkoutUrl: checkoutResult.url,
     });
   } catch (error) {
     console.error('Unexpected error in POST /api/calls:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
