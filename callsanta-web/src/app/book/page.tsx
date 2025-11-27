@@ -64,7 +64,7 @@ export default function BookPage() {
   return (
     <div className="min-h-screen overflow-hidden relative">
       {/* White As Seen Bar at very top - snow falls FROM here */}
-      <AsSeenBar className="max-w-3xl mx-auto rounded-b-xl" />
+      <AsSeenBar className="w-full rounded-b-xl" />
       
       {/* Main red background starts AFTER the white bar */}
       <div className="bg-[#c41e3a] min-h-screen relative">
@@ -90,24 +90,6 @@ export default function BookPage() {
           ) : null}
         </div>
 
-          {/* Trust Indicators */}
-          <div className="max-w-3xl mx-auto text-center pb-24 px-4">
-            <div className="flex flex-wrap justify-center gap-4">
-              {[
-                { icon: <ShieldIcon />, label: 'Secure Payment' },
-                { icon: <LockIcon />, label: 'Privacy Protected' },
-                { icon: <HeartIcon />, label: 'Made with Love' },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full bg-white shadow-lg border border-[#d4a849]"
-                >
-                  <span className="w-5 h-5 text-[#d4a849]">{item.icon}</span>
-                  <span className="text-sm font-semibold text-[#c41e3a]">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </main>
 
         {/* Bottom snow accumulation effect */}
@@ -222,7 +204,7 @@ function BookingHero({ onBookNow }: { onBookNow?: () => void }) {
             </h1>
             
             <p className="text-lg sm:text-xl text-[#c41e3a]/70 leading-relaxed max-w-lg mx-auto">
-            The real santa will call your number, ask your child about their wishlist and then emails it to you!
+            The real santa will call your number, ask your child about their wishlist and then email it to you!
             </p>
           </div>
 
