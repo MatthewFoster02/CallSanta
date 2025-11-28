@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Snowfall, Footer } from "@/components/layout";
 
@@ -54,11 +54,6 @@ export default async function RecordingDownloadPage({ params, searchParams }: Pa
 
   if (error || !call) {
     notFound();
-  }
-
-  // If not purchased, redirect to purchase page
-  if (!call.recording_purchased) {
-    redirect(`/recording/${callId}/purchase`);
   }
 
   // Check if recording is available
