@@ -72,11 +72,15 @@ export async function renderSantaVideo(options: RenderVideoOptions): Promise<Ren
   console.log(`[Video] Starting render for call ${callId}`);
   console.log(`[Video] Child name: ${childName}`);
 
-  // Update status to processing
-  await supabaseAdmin
-    .from('calls')
-    .update({ video_status: 'processing' })
-    .eq('id', callId);
+  // Update status to processing (graceful - ignore if column doesn't exist)
+  try {
+    await supabaseAdmin
+      .from('calls')
+      .update({ video_status: 'processing' })
+      .eq('id', callId);
+  } catch (e) {
+    console.log('[Video] Could not update video_status (column may not exist yet)');
+  }
 
   let tempAudioPath: string | null = null;
 
@@ -208,15 +212,20 @@ export async function renderSantaVideo(options: RenderVideoOptions): Promise<Ren
 
     console.log(`[Video] Video uploaded: ${publicUrl}`);
 
-    // Step 7: Update database with video URL
-    await supabaseAdmin
-      .from('calls')
-      .update({
-        video_url: publicUrl,
-        video_status: 'completed',
-        video_generated_at: new Date().toISOString(),
-      })
-      .eq('id', callId);
+    // Step 7: Update database with video URL (graceful - ignore if columns don't exist)
+    try {
+      await supabaseAdmin
+        .from('calls')
+        .update({
+          video_url: publicUrl,
+          video_status: 'completed',
+          video_generated_at: new Date().toISOString(),
+        })
+        .eq('id', callId);
+    } catch (e) {
+      console.log('[Video] Could not update video columns (migration may not be run yet)');
+      console.log('[Video] Video URL:', publicUrl);
+    }
 
     // Step 8: Cleanup temp files
     try {
@@ -247,11 +256,15 @@ export async function renderSantaVideo(options: RenderVideoOptions): Promise<Ren
       }
     }
 
-    // Update status to failed
-    await supabaseAdmin
-      .from('calls')
-      .update({ video_status: 'failed' })
-      .eq('id', callId);
+    // Update status to failed (graceful)
+    try {
+      await supabaseAdmin
+        .from('calls')
+        .update({ video_status: 'failed' })
+        .eq('id', callId);
+    } catch {
+      // Ignore if column doesn't exist
+    }
 
     return {
       success: false,
@@ -268,11 +281,15 @@ export async function renderSantaVideo(options: RenderVideoOptions): Promise<Ren
 export async function queueVideoRender(options: RenderVideoOptions): Promise<void> {
   console.log(`[Video] Queueing video render for call ${options.callId}`);
   
-  // Mark as pending
-  await supabaseAdmin
-    .from('calls')
-    .update({ video_status: 'pending' })
-    .eq('id', options.callId);
+  // Mark as pending (graceful - ignore if column doesn't exist)
+  try {
+    await supabaseAdmin
+      .from('calls')
+      .update({ video_status: 'pending' })
+      .eq('id', options.callId);
+  } catch {
+    // Ignore if column doesn't exist
+  }
 
   // For MVP: render directly (in production, use a queue)
   // This is non-blocking - we don't await the result

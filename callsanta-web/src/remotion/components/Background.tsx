@@ -5,81 +5,67 @@ export const Background: React.FC = () => {
   
   // Subtle gradient animation
   const gradientShift = interpolate(
-    frame % 300,
-    [0, 150, 300],
-    [0, 10, 0]
+    frame % 600,
+    [0, 300, 600],
+    [0, 5, 0]
   );
 
-  // Snowflake positions (deterministic based on index)
-  const snowflakes = Array.from({ length: 30 }, (_, i) => ({
+  // Minimal floating particles (subtle)
+  const particles = Array.from({ length: 12 }, (_, i) => ({
     id: i,
-    x: (i * 37) % 100,
-    size: 4 + (i % 3) * 2,
-    speed: 0.3 + (i % 4) * 0.15,
-    opacity: 0.3 + (i % 3) * 0.2,
+    x: (i * 43) % 100,
+    size: 3 + (i % 2) * 2,
+    speed: 0.15 + (i % 3) * 0.1,
+    opacity: 0.08 + (i % 3) * 0.04,
   }));
 
   return (
     <AbsoluteFill>
-      {/* Base gradient - Christmas red to deep burgundy */}
+      {/* Clean white/cream gradient background */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(${170 + gradientShift}deg, 
-            #1a0a0a 0%, 
-            #2d0a0a 20%,
-            #4a1515 40%,
-            #6b1a1a 60%,
-            #8b2020 80%,
-            #5a1010 100%
+          background: `linear-gradient(${175 + gradientShift}deg, 
+            #ffffff 0%, 
+            #fafafa 30%,
+            #f5f5f5 60%,
+            #f0f0f0 100%
           )`,
         }}
       />
       
-      {/* Radial glow behind Santa */}
+      {/* Subtle warm glow at top */}
       <div
         style={{
           position: 'absolute',
-          top: '20%',
+          top: 0,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 800,
-          height: 800,
-          background: 'radial-gradient(circle, rgba(200,50,50,0.3) 0%, transparent 70%)',
-          filter: 'blur(40px)',
+          width: 1200,
+          height: 600,
+          background: 'radial-gradient(ellipse, rgba(196,30,58,0.06) 0%, transparent 70%)',
+          filter: 'blur(60px)',
         }}
       />
 
-      {/* Golden accent glow at bottom */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 400,
-          background: 'linear-gradient(to top, rgba(255,200,50,0.08) 0%, transparent 100%)',
-        }}
-      />
-
-      {/* Animated snowflakes */}
-      {snowflakes.map((flake) => {
-        const y = ((frame * flake.speed) + (flake.id * 100)) % 2200 - 200;
-        const wobble = Math.sin(frame * 0.02 + flake.id) * 20;
+      {/* Very subtle floating particles */}
+      {particles.map((particle) => {
+        const y = ((frame * particle.speed) + (particle.id * 80)) % 2200 - 100;
+        const wobble = Math.sin(frame * 0.015 + particle.id) * 15;
         
         return (
           <div
-            key={flake.id}
+            key={particle.id}
             style={{
               position: 'absolute',
-              left: `${flake.x}%`,
+              left: `${particle.x}%`,
               top: y,
-              width: flake.size,
-              height: flake.size,
+              width: particle.size,
+              height: particle.size,
               borderRadius: '50%',
-              backgroundColor: 'white',
-              opacity: flake.opacity,
+              backgroundColor: '#c41e3a',
+              opacity: particle.opacity,
               transform: `translateX(${wobble}px)`,
               filter: 'blur(1px)',
             }}
@@ -87,15 +73,18 @@ export const Background: React.FC = () => {
         );
       })}
 
-      {/* Vignette overlay */}
+      {/* Subtle grid pattern overlay */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)',
+          backgroundImage: `
+            linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px',
         }}
       />
     </AbsoluteFill>
   );
 };
-

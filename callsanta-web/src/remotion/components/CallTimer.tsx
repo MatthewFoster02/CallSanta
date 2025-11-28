@@ -31,76 +31,49 @@ export const CallTimer: React.FC<CallTimerProps> = ({ startFrame }) => {
       style={{
         justifyContent: 'flex-end',
         alignItems: 'center',
-        paddingBottom: 200,
+        paddingBottom: 240, // Above the banner
       }}
     >
-      {/* Timer container */}
+      {/* Timer container - clean modern style */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 16,
+          gap: 14,
           opacity,
-          background: 'rgba(0,0,0,0.4)',
-          padding: '16px 28px',
-          borderRadius: 40,
-          backdropFilter: 'blur(10px)',
+          background: 'white',
+          padding: '14px 24px',
+          borderRadius: 50,
+          boxShadow: '0 2px 15px rgba(0,0,0,0.08)',
+          border: '1px solid #e5e5e5',
         }}
       >
         {/* Recording indicator */}
         <div
           style={{
-            width: 14,
-            height: 14,
+            width: 12,
+            height: 12,
             borderRadius: '50%',
-            backgroundColor: '#ff4444',
-            boxShadow: `0 0 ${8 * pulse}px #ff4444`,
-            opacity: pulse,
+            backgroundColor: '#ef4444',
+            boxShadow: `0 0 ${6 * pulse}px #ef4444`,
+            opacity: 0.5 + pulse * 0.5,
           }}
         />
         
         {/* Timer text */}
         <span
           style={{
-            color: '#fff',
-            fontSize: 32,
+            color: '#333',
+            fontSize: 24,
             fontWeight: 600,
             fontFamily: 'system-ui, -apple-system, sans-serif',
             fontVariantNumeric: 'tabular-nums',
-            letterSpacing: 2,
+            letterSpacing: 1,
           }}
         >
           {timeString}
         </span>
       </div>
-
-      {/* "LIVE" badge */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 280,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          background: 'rgba(255,68,68,0.9)',
-          padding: '8px 16px',
-          borderRadius: 6,
-          opacity: pulse,
-        }}
-      >
-        <span
-          style={{
-            color: '#fff',
-            fontSize: 18,
-            fontWeight: 700,
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            letterSpacing: 2,
-          }}
-        >
-          LIVE
-        </span>
-      </div>
     </AbsoluteFill>
   );
 };
-

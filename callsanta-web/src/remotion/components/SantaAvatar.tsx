@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, spring, useVideoConfig } from 'remotion';
 
 interface SantaAvatarProps {
   isRinging: boolean;
@@ -24,54 +24,43 @@ export const SantaAvatar: React.FC<SantaAvatarProps> = ({
     },
   });
 
-  // Breathing animation when connected
+  // Subtle breathing animation when connected
   const breathe = isRinging 
     ? 0 
-    : Math.sin(frame * 0.03) * 0.02;
+    : Math.sin(frame * 0.025) * 0.015;
 
   // Ring scale for incoming call effect
-  const ringScale = isRinging ? 1 + ringPulse * 0.08 : 1;
-
-  // Glow intensity
-  const glowIntensity = isRinging 
-    ? 0.4 + ringPulse * 0.3 
-    : interpolate(connectionProgress, [0, 1], [0.4, 0.6]);
+  const ringScale = isRinging ? 1 + ringPulse * 0.05 : 1;
 
   return (
     <AbsoluteFill
       style={{
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: 280,
+        paddingTop: 320,
       }}
     >
       {/* Pulsing ring effect for incoming call */}
       {isRinging && (
         <>
           {[0, 1, 2].map((i) => {
-            const delay = i * 10;
-            const opacity = interpolate(
-              (frame + delay) % 60,
-              [0, 30, 60],
-              [0.6, 0.2, 0],
-              { extrapolateRight: 'clamp' }
-            );
-            const scale = interpolate(
-              (frame + delay) % 60,
-              [0, 60],
-              [1, 1.8]
-            );
+            const delay = i * 12;
+            const cycleFrame = (frame + delay) % 70;
+            const opacity = cycleFrame < 50 
+              ? 0.5 - (cycleFrame / 50) * 0.5
+              : 0;
+            const scale = 1 + (cycleFrame / 70) * 0.6;
             
             return (
               <div
                 key={i}
                 style={{
                   position: 'absolute',
-                  top: 280 + 180,
-                  width: 360,
-                  height: 360,
+                  top: 320 + 140,
+                  width: 280,
+                  height: 280,
                   borderRadius: '50%',
-                  border: '4px solid rgba(50, 205, 50, 0.8)',
+                  border: '3px solid #c41e3a',
                   opacity,
                   transform: `scale(${scale})`,
                 }}
@@ -81,96 +70,93 @@ export const SantaAvatar: React.FC<SantaAvatarProps> = ({
         </>
       )}
 
-      {/* Green connected indicator */}
+      {/* Connected green ring */}
       {!isRinging && connectionProgress > 0.5 && (
         <div
           style={{
             position: 'absolute',
-            top: 270,
-            width: 380,
-            height: 380,
+            top: 310,
+            width: 300,
+            height: 300,
             borderRadius: '50%',
-            border: '4px solid rgba(50, 205, 50, 0.6)',
-            boxShadow: '0 0 30px rgba(50, 205, 50, 0.4)',
+            border: '3px solid #22c55e',
+            boxShadow: '0 0 20px rgba(34, 197, 94, 0.3)',
           }}
         />
       )}
 
-      {/* Avatar glow */}
+      {/* Avatar shadow */}
       <div
         style={{
           position: 'absolute',
-          width: 400,
-          height: 400,
+          top: 460,
+          width: 200,
+          height: 40,
+          background: 'radial-gradient(ellipse, rgba(0,0,0,0.12) 0%, transparent 70%)',
           borderRadius: '50%',
-          background: `radial-gradient(circle, rgba(255,255,255,${glowIntensity}) 0%, transparent 70%)`,
-          filter: 'blur(30px)',
         }}
       />
 
-      {/* Santa avatar container */}
+      {/* Santa avatar container - clean, modern */}
       <div
         style={{
-          width: 360,
-          height: 360,
+          width: 280,
+          height: 280,
           borderRadius: '50%',
-          background: 'linear-gradient(180deg, #c41e3a 0%, #8b0000 100%)',
+          background: 'linear-gradient(180deg, #c41e3a 0%, #9a1830 100%)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           transform: `scale(${entryScale * ringScale * (1 + breathe)})`,
           boxShadow: `
-            0 0 0 8px rgba(255,255,255,0.1),
-            0 20px 60px rgba(0,0,0,0.4),
-            inset 0 -10px 30px rgba(0,0,0,0.2)
+            0 4px 20px rgba(196, 30, 58, 0.25),
+            0 8px 40px rgba(0,0,0,0.1),
+            inset 0 -4px 20px rgba(0,0,0,0.15)
           `,
-          overflow: 'hidden',
+          border: '4px solid white',
         }}
       >
-        {/* Santa emoji/icon - using emoji for now, can replace with actual image */}
-        <span style={{ fontSize: 180, marginTop: -10 }}>🎅</span>
+        {/* Santa emoji */}
+        <span style={{ fontSize: 140, marginTop: -8 }}>🎅</span>
       </div>
 
-      {/* Connection status badge */}
+      {/* Status badge - modern pill style */}
       <div
         style={{
-          position: 'absolute',
-          top: 580,
+          marginTop: 24,
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
-          background: isRinging 
-            ? 'rgba(255,255,255,0.15)' 
-            : 'rgba(50,205,50,0.2)',
-          padding: '12px 24px',
-          borderRadius: 30,
-          opacity: interpolate(frame, [20, 40], [0, 1], { extrapolateRight: 'clamp' }),
+          gap: 10,
+          background: isRinging ? 'white' : 'rgba(34, 197, 94, 0.1)',
+          padding: '10px 20px',
+          borderRadius: 50,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+          border: isRinging ? '1px solid #e5e5e5' : '1px solid rgba(34, 197, 94, 0.2)',
         }}
       >
         <div
           style={{
-            width: 12,
-            height: 12,
+            width: 10,
+            height: 10,
             borderRadius: '50%',
-            backgroundColor: isRinging ? '#fff' : '#32cd32',
+            backgroundColor: isRinging ? '#c41e3a' : '#22c55e',
             boxShadow: isRinging 
-              ? `0 0 ${8 + ringPulse * 8}px #fff` 
-              : '0 0 10px #32cd32',
+              ? `0 0 ${6 + ringPulse * 6}px #c41e3a` 
+              : '0 0 8px #22c55e',
           }}
         />
         <span
           style={{
-            color: '#fff',
-            fontSize: 24,
+            color: isRinging ? '#333' : '#16a34a',
+            fontSize: 18,
             fontWeight: 600,
             fontFamily: 'system-ui, -apple-system, sans-serif',
-            letterSpacing: 1,
+            letterSpacing: 0.5,
           }}
         >
-          {isRinging ? 'INCOMING CALL' : 'CONNECTED'}
+          {isRinging ? 'Incoming Call' : 'Connected'}
         </span>
       </div>
     </AbsoluteFill>
   );
 };
-

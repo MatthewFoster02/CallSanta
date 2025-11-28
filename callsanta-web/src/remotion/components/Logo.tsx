@@ -4,7 +4,7 @@ export const Logo: React.FC = () => {
   const frame = useCurrentFrame();
 
   // Fade in after a short delay
-  const opacity = interpolate(frame, [60, 90], [0, 1], {
+  const opacity = interpolate(frame, [30, 60], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -13,59 +13,52 @@ export const Logo: React.FC = () => {
     <AbsoluteFill
       style={{
         justifyContent: 'flex-end',
-        alignItems: 'flex-start',
-        padding: 60,
-        paddingBottom: 100,
+        alignItems: 'center',
       }}
     >
-      {/* Logo container */}
+      {/* Big red banner at bottom */}
       <div
         style={{
+          width: '100%',
+          height: 180,
+          background: 'linear-gradient(180deg, #c41e3a 0%, #a01830 100%)',
           display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
           alignItems: 'center',
-          gap: 12,
           opacity,
-          background: 'rgba(0,0,0,0.3)',
-          padding: '12px 20px',
-          borderRadius: 12,
-          backdropFilter: 'blur(10px)',
+          boxShadow: '0 -4px 30px rgba(0,0,0,0.15)',
         }}
       >
-        {/* Logo icon */}
-        <span style={{ fontSize: 28 }}>🎅</span>
-        
-        {/* Logo text */}
+        {/* Main URL */}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
+            color: 'white',
+            fontSize: 56,
+            fontWeight: 800,
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            letterSpacing: -1,
+            textShadow: '0 2px 10px rgba(0,0,0,0.2)',
           }}
         >
-          <span
-            style={{
-              color: '#fff',
-              fontSize: 20,
-              fontWeight: 700,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: 0.5,
-            }}
-          >
-            santasnumber.com
-          </span>
-          <span
-            style={{
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: 12,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: 1,
-              textTransform: 'uppercase',
-            }}
-          >
-            Book your call today
-          </span>
+          santasnumber.com
+        </div>
+        
+        {/* Tagline */}
+        <div
+          style={{
+            color: 'rgba(255,255,255,0.85)',
+            fontSize: 20,
+            fontWeight: 500,
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            letterSpacing: 2,
+            textTransform: 'uppercase',
+            marginTop: 8,
+          }}
+        >
+          Book a call from Santa
         </div>
       </div>
     </AbsoluteFill>
   );
 };
-

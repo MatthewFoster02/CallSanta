@@ -83,8 +83,10 @@ export default async function RecordingDownloadPage({ params, searchParams }: Pa
 
   // Check if recording/video is available
   const hasRecording = !!call.recording_url;
-  const hasVideo = !!call.video_url;
-  const videoStatus = call.video_status;
+  // Video fields may not exist if migration hasn't run - safely access them
+  const hasVideo = !!(call as Record<string, unknown>).video_url;
+  const videoStatus = (call as Record<string, unknown>).video_status as string | null;
+  const videoUrl = (call as Record<string, unknown>).video_url as string | null;
   const justPurchased = purchased === "true";
   const activeTab = tab === "video" ? "video" : "audio";
 
@@ -103,7 +105,7 @@ export default async function RecordingDownloadPage({ params, searchParams }: Pa
     }
   }
 
-  if (hasVideo && call.video_url) {
+  if (hasVideo && videoUrl) {
     const fileName = `${call.id}.mp4`;
     const { data } = await supabaseAdmin.storage
       .from("call-videos")

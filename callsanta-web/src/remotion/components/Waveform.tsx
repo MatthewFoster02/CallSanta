@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, spring, useVideoConfig } from 'remotion';
 
 interface WaveformProps {
   waveformData: number[];
@@ -13,7 +13,7 @@ export const Waveform: React.FC<WaveformProps> = ({
   const { fps } = useVideoConfig();
 
   // Number of bars to display
-  const barCount = 40;
+  const barCount = 32;
   
   // Entry animation
   const entryProgress = spring({
@@ -33,35 +33,23 @@ export const Waveform: React.FC<WaveformProps> = ({
     if (!waveformData || waveformData.length === 0) {
       // Fallback: generate fake waveform based on frame
       const fakeAmplitude = 
-        Math.sin(audioFrame * 0.1 + barIndex * 0.5) * 0.3 +
-        Math.sin(audioFrame * 0.05 + barIndex * 0.3) * 0.2 +
-        0.3 +
-        Math.random() * 0.1;
-      return Math.max(0.1, Math.min(1, fakeAmplitude));
+        Math.sin(audioFrame * 0.08 + barIndex * 0.4) * 0.3 +
+        Math.sin(audioFrame * 0.04 + barIndex * 0.25) * 0.2 +
+        0.35 +
+        Math.random() * 0.08;
+      return Math.max(0.15, Math.min(1, fakeAmplitude));
     }
 
     // Map bar index to waveform data
     const dataIndex = Math.floor((audioFrame / 2) + barIndex) % waveformData.length;
     const amplitude = waveformData[dataIndex] || 0.3;
     
-    // Add some variation based on neighboring values
+    // Smooth with neighbors
     const prevIndex = Math.max(0, dataIndex - 1);
     const nextIndex = Math.min(waveformData.length - 1, dataIndex + 1);
     const smoothed = (waveformData[prevIndex] + amplitude + waveformData[nextIndex]) / 3;
     
-    return Math.max(0.1, Math.min(1, smoothed));
-  };
-
-  // Bar colors - gradient from green to gold
-  const getBarColor = (index: number, amplitude: number): string => {
-    const normalizedIndex = index / barCount;
-    const intensity = amplitude;
-    
-    // Create a gradient effect across bars
-    if (normalizedIndex < 0.3 || normalizedIndex > 0.7) {
-      return `rgba(50, 205, 50, ${0.6 + intensity * 0.4})`; // Green on edges
-    }
-    return `rgba(255, 215, 0, ${0.6 + intensity * 0.4})`; // Gold in center
+    return Math.max(0.15, Math.min(1, smoothed));
   };
 
   return (
@@ -69,7 +57,7 @@ export const Waveform: React.FC<WaveformProps> = ({
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: 200,
+        paddingTop: 180,
       }}
     >
       {/* Waveform container */}
@@ -78,20 +66,19 @@ export const Waveform: React.FC<WaveformProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
-          height: 200,
+          gap: 8,
+          height: 160,
           opacity: entryProgress,
-          transform: `scale(${0.8 + entryProgress * 0.2})`,
+          transform: `scale(${0.9 + entryProgress * 0.1})`,
         }}
       >
         {Array.from({ length: barCount }).map((_, index) => {
           const amplitude = getAmplitude(index);
-          const barHeight = 20 + amplitude * 160;
-          const color = getBarColor(index, amplitude);
+          const barHeight = 20 + amplitude * 120;
           
           // Staggered entry animation
           const barEntry = spring({
-            frame: frame - startFrame - index * 0.5,
+            frame: frame - startFrame - index * 0.3,
             fps,
             config: {
               damping: 10,
@@ -103,30 +90,16 @@ export const Waveform: React.FC<WaveformProps> = ({
             <div
               key={index}
               style={{
-                width: 12,
+                width: 8,
                 height: barHeight * barEntry,
-                backgroundColor: color,
-                borderRadius: 6,
-                boxShadow: `0 0 ${10 + amplitude * 20}px ${color}`,
-                transition: 'height 0.05s ease-out',
+                backgroundColor: '#c41e3a',
+                borderRadius: 4,
+                opacity: 0.7 + amplitude * 0.3,
               }}
             />
           );
         })}
       </div>
-
-      {/* Glow effect behind waveform */}
-      <div
-        style={{
-          position: 'absolute',
-          width: 600,
-          height: 300,
-          background: 'radial-gradient(ellipse, rgba(50,205,50,0.15) 0%, transparent 70%)',
-          filter: 'blur(20px)',
-          pointerEvents: 'none',
-        }}
-      />
     </AbsoluteFill>
   );
 };
-
