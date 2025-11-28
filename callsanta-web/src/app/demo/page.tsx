@@ -36,8 +36,8 @@ export default function DemoPage() {
 /* ============================================
    AS SEEN BAR COMPONENT - WHITE BACKGROUND
    ============================================ */
-const PLATFORMS: { name: string; icon: IconType }[] = [
-  { name: 'Instagram', icon: FaInstagram },
+const PLATFORMS: { name: string; icon: IconType; link?: string }[] = [
+  { name: 'Instagram', icon: FaInstagram, link: 'https://www.instagram.com/santasnumberdotcom' },
   { name: 'TikTok', icon: FaTiktok },
   { name: 'X', icon: FaXTwitter },
   { name: 'Facebook', icon: FaFacebook },
@@ -65,10 +65,19 @@ function AsSeenBar({ className }: { className?: string }) {
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           {PLATFORMS.map((platform) => (
             <div key={platform.name} className="transition-transform duration-300">
-              <platform.icon
-                size={24}
-                className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
-              />
+              {platform.link ? (
+                <a href={platform.link} target="_blank" rel="noopener noreferrer">
+                  <platform.icon
+                    size={24}
+                    className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
+                  />
+                </a>
+              ) : (
+                <platform.icon
+                  size={24}
+                  className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
+                />
+              )}
             </div>
           ))}
         </div>
@@ -143,7 +152,7 @@ function DemoHero() {
 
           {/* CTA Button */}
           <div className="relative inline-block group">
-            <Link href="/book">
+            <Link href="/book?book=true">
               <Button
                 size="lg"
                 className="bg-[#c41e3a] hover:bg-[#a01830] text-white text-xl sm:text-2xl px-12 py-6 rounded-full font-bold shadow-xl transition-all duration-300 hover:scale-105 border-2 border-[#d4a849]"
