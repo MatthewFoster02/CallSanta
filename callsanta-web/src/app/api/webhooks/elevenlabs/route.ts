@@ -302,30 +302,10 @@ async function handleAudioWebhook(data: {
     // Don't fail the webhook if video render fails
   }
 
-  // If recording was purchased, send post-call email now that we have the audio
-  // Only send if transcript_sent_at is null (email not already sent)
-  if (call.recording_purchased && !call.transcript_sent_at) {
-    // Re-fetch the call to get the latest transcript
-    const { data: updatedCall } = await supabaseAdmin
-      .from('calls')
-      .select('*')
-      .eq('id', call.id)
-      .single();
-
-    if (updatedCall && updatedCall.transcript) {
-      await sendPostCallEmail(updatedCall as Call);
-      await supabaseAdmin
-        .from('calls')
-        .update({ transcript_sent_at: new Date().toISOString() })
-        .eq('id', call.id);
-      await supabaseAdmin.from('call_events').insert({
-        call_id: call.id,
-        event_type: 'post_call_email_sent',
-        event_data: { recording_purchased: true },
-      });
-      console.log(`Post-call email sent for call ${call.id} (with recording)`);
-    }
-  }
+  // NOTE: Email is now sent by the video worker AFTER video is rendered
+  // This ensures users get the email with the video link included
+  // For calls without recording purchased, email is sent in handleTranscriptionWebhook
+  console.log(`[Webhook] Email will be sent after video is rendered for call ${call.id}`);
 
   return NextResponse.json({ received: true, callId: call.id, type: 'audio' });
 }
