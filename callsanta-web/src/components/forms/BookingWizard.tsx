@@ -74,6 +74,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
   const watchedValues = watch();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasLoadedRef = useRef(false);
+  const emailBlurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load saved form data on mount
   useEffect(() => {
@@ -252,6 +253,25 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
     }
   }, [collapsed.contact, editingSection, lastCollapsedKey.contact, trigger, watchedValues.childAge, watchedValues.childName, watchedValues.parentEmail, watchedValues.phoneNumber]);
 
+  // Debounced version for email input to handle browser autocomplete
+  const debouncedTryAutoCollapseContact = useCallback(() => {
+    if (emailBlurTimeoutRef.current) {
+      clearTimeout(emailBlurTimeoutRef.current);
+    }
+    emailBlurTimeoutRef.current = setTimeout(() => {
+      tryAutoCollapseContact();
+    }, 100);
+  }, [tryAutoCollapseContact]);
+
+  // Cleanup email blur timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (emailBlurTimeoutRef.current) {
+        clearTimeout(emailBlurTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Trigger PaymentIntent creation once required fields are valid (contact + time + email)
   useEffect(() => {
     const hasRequired =
@@ -400,7 +420,7 @@ export function BookingWizard({ onSubmit, pricing }: BookingWizardProps) {
                       label="Your Email"
                       placeholder="you@example.com"
                       error={errors.parentEmail?.message}
-                      onBlur={tryAutoCollapseContact}
+                      onBlur={debouncedTryAutoCollapseContact}
                       className="w-full text-base sm:text-lg"
                     />
                   )}
