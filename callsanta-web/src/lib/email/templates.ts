@@ -178,10 +178,10 @@ export function oneHourReminderTemplate(call: Call): string {
 }
 
 /**
- * Post-Call Email - Without Recording Purchased
- * Includes transcript and download link
+ * Post-Call Email
+ * Sent after call completes with transcript and recording download link
  */
-export function postCallWithoutRecordingTemplate(call: Call): string {
+export function postCallTemplate(call: Call): string {
   const downloadUrl = `${APP_URL}/recording/${call.id}`;
 
   const content = `
@@ -217,99 +217,6 @@ export function postCallWithoutRecordingTemplate(call: Call): string {
 
       <p style="text-align: center; color: #888; font-size: 14px;">
         Thank you for choosing Call Santa! We hope this brought joy to your holiday. &#10052;
-      </p>
-    </div>
-  `;
-
-  return baseLayout(content);
-}
-
-/**
- * Post-Call Email - With Recording Purchased
- * Includes transcript and download link
- */
-export function postCallWithRecordingTemplate(call: Call): string {
-  const downloadUrl = `${APP_URL}/recording/${call.id}`;
-
-  const content = `
-    <div style="${styles.header}">
-      <span style="${styles.snowflake}">&#127877;</span>
-      <h1 style="${styles.headerTitle}">Santa Called ${call.child_name}!</h1>
-      <p style="${styles.headerSubtitle}">Your recording is ready to download</p>
-    </div>
-
-    <div style="${styles.content}">
-      <p style="font-size: 16px; color: #333; line-height: 1.6;">
-        Ho ho ho! Santa just finished a wonderful conversation with ${call.child_name}!
-        Below you'll find the full transcript and a link to download the recording.
-      </p>
-
-      ${call.call_duration_seconds ? `
-      <p style="color: #666; font-size: 14px;">
-        Call duration: ${Math.floor(call.call_duration_seconds / 60)} minutes ${call.call_duration_seconds % 60} seconds
-      </p>
-      ` : ''}
-
-      <div style="background: #165B33; color: #ffffff; padding: 24px; border-radius: 12px; margin: 24px 0; text-align: center;">
-        <p style="margin: 0 0 16px; font-size: 14px; opacity: 0.9;">&#127908; Your Recording is Ready!</p>
-        <a href="${downloadUrl}" style="${styles.button}; background: #FFD700; color: #333;">
-          Download Recording
-        </a>
-      </div>
-
-      <div style="background: #f8f9fa; border-left: 4px solid #C41E3A; padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0;">
-        <h3 style="margin: 0 0 16px; color: #C41E3A; font-size: 16px;">&#128221; Call Transcript</h3>
-        <div style="color: #444; line-height: 1.8; white-space: pre-wrap; font-size: 14px;">${call.transcript || 'Transcript will be available shortly...'}</div>
-      </div>
-
-      <p style="text-align: center; color: #888; font-size: 14px;">
-        Thank you for choosing Call Santa! We hope this brought joy to your holiday. &#10052;
-      </p>
-    </div>
-  `;
-
-  return baseLayout(content);
-}
-
-/**
- * Recording Purchase Confirmation Email
- * Sent after someone purchases the recording post-call
- */
-export function recordingPurchaseConfirmationTemplate(call: Call): string {
-  const downloadUrl = `${APP_URL}/recording/${call.id}`;
-
-  const content = `
-    <div style="${styles.header}">
-      <span style="${styles.snowflake}">&#127908;</span>
-      <h1 style="${styles.headerTitle}">Recording Purchase Confirmed!</h1>
-      <p style="${styles.headerSubtitle}">Your download is ready</p>
-    </div>
-
-    <div style="${styles.content}">
-      <p style="font-size: 16px; color: #333; line-height: 1.6;">
-        Great news! Your purchase of the Santa call recording for <strong>${call.child_name}</strong> is complete.
-      </p>
-
-      <div style="background: #165B33; color: #ffffff; padding: 32px; border-radius: 12px; margin: 24px 0; text-align: center;">
-        <p style="margin: 0 0 8px; font-size: 14px; opacity: 0.9;">&#10003; Purchase Complete</p>
-        <h2 style="margin: 0 0 20px; font-size: 20px;">Your Recording is Ready!</h2>
-        <a href="${downloadUrl}" style="${styles.button}; background: #FFD700; color: #333;">
-          Download Recording
-        </a>
-      </div>
-
-      <div style="${styles.card}">
-        <h3 style="margin: 0 0 12px; color: #333; font-size: 16px;">What You Get</h3>
-        <ul style="margin: 0; padding-left: 20px; color: #555; line-height: 1.8;">
-          <li>High-quality MP3 recording of the full call</li>
-          <li>Download as many times as you like</li>
-          <li>Share with family and friends</li>
-          <li>Keep this magical memory forever</li>
-        </ul>
-      </div>
-
-      <p style="text-align: center; color: #888; font-size: 14px; margin-top: 30px;">
-        Thank you for preserving this special moment! &#127877;
       </p>
     </div>
   `;

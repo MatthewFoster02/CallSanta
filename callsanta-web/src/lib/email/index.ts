@@ -3,8 +3,7 @@ import { Call } from '@/types/database';
 import {
   bookingConfirmationTemplate,
   oneHourReminderTemplate,
-  postCallWithRecordingTemplate,
-  recordingPurchaseConfirmationTemplate,
+  postCallTemplate,
 } from './templates';
 
 // Initialize Resend client
@@ -132,8 +131,7 @@ export async function sendOneHourReminderEmail(call: Call): Promise<EmailResult>
  */
 export async function sendPostCallEmail(call: Call): Promise<EmailResult> {
   try {
-    // Recording is now always included, use consistent template
-    const template = postCallWithRecordingTemplate(call);
+    const template = postCallTemplate(call);
     const subject = `Santa's Call with ${call.child_name} - Recording Ready!`;
 
     const { data, error } = await resend.emails.send({
@@ -153,32 +151,6 @@ export async function sendPostCallEmail(call: Call): Promise<EmailResult> {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error('Error sending post-call email:', errorMessage);
-    return { success: false, error: errorMessage };
-  }
-}
-
-/**
- * Send recording purchase confirmation email
- */
-export async function sendRecordingPurchaseConfirmationEmail(call: Call): Promise<EmailResult> {
-  try {
-    const { data, error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: call.parent_email,
-      subject: `Recording Ready! Download ${call.child_name}'s Santa Call`,
-      html: recordingPurchaseConfirmationTemplate(call),
-    });
-
-    if (error) {
-      console.error('Failed to send recording purchase email:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log(`Recording purchase confirmation email sent for call ${call.id}`);
-    return { success: true, id: data?.id };
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Error sending recording purchase email:', errorMessage);
     return { success: false, error: errorMessage };
   }
 }

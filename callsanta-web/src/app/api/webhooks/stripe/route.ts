@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { constructWebhookEvent } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import {
-  sendBookingConfirmationEmail,
-  sendRecordingPurchaseConfirmationEmail,
-} from '@/lib/email';
+import { sendBookingConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -67,89 +64,62 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   if (isRecordingPurchase) {
-    // Post-call recording purchase
-    const { error } = await supabaseAdmin
-      .from('calls')
-      .update({
-        recording_purchased: true,
-        recording_purchased_at: new Date().toISOString(),
-      })
-      .eq('id', callId);
+    // Recording purchases are now free - this path should not be hit
+    console.log('Ignoring recording_purchase webhook - recordings are now free');
+    return;
+  }
 
-    if (error) {
-      console.error('Error updating recording purchase:', error);
-      throw error;
-    }
+  // Initial call booking payment
+  const includeRecording = session.metadata?.include_recording === 'true';
 
-    await logCallEvent(callId, 'recording_purchased', {
-      session_id: session.id,
-      amount: session.amount_total,
+  const { error } = await supabaseAdmin
+    .from('calls')
+    .update({
+      payment_status: 'paid',
+      call_status: 'scheduled',
+      stripe_payment_intent_id: session.payment_intent as string,
+      recording_purchased: includeRecording,
+    })
+    .eq('id', callId);
+
+  if (error) {
+    console.error('Error updating call after payment:', error);
+    throw error;
+  }
+
+  await logCallEvent(callId, 'payment_received', {
+    session_id: session.id,
+    payment_intent: session.payment_intent,
+    amount: session.amount_total,
+    include_recording: includeRecording,
+  });
+
+  // Fetch the call to send confirmation email
+  const { data: call, error: fetchCallError } = await supabaseAdmin
+    .from('calls')
+    .select('*')
+    .eq('id', callId)
+    .single();
+
+  console.log('[Stripe] Fetched call for booking confirmation:', call ? {
+    id: call.id,
+    parent_email: call.parent_email,
+    child_name: call.child_name,
+  } : 'null');
+
+  if (fetchCallError) {
+    console.error('[Stripe] Error fetching call for confirmation email:', fetchCallError);
+  }
+
+  if (call) {
+    console.log('[Stripe] Sending booking confirmation email...');
+    const emailResult = await sendBookingConfirmationEmail(call);
+    console.log('[Stripe] Booking confirmation email result:', emailResult);
+    await logCallEvent(callId, 'booking_confirmation_email_sent', {
+      email_result: emailResult,
     });
-
-    // Fetch the call to send confirmation email
-    const { data: call } = await supabaseAdmin
-      .from('calls')
-      .select('*')
-      .eq('id', callId)
-      .single();
-
-    if (call) {
-      await sendRecordingPurchaseConfirmationEmail(call);
-      await logCallEvent(callId, 'recording_purchase_email_sent', {});
-    }
   } else {
-    // Initial call booking payment
-    const includeRecording = session.metadata?.include_recording === 'true';
-
-    const { error } = await supabaseAdmin
-      .from('calls')
-      .update({
-        payment_status: 'paid',
-        call_status: 'scheduled',
-        stripe_payment_intent_id: session.payment_intent as string,
-        recording_purchased: includeRecording,
-      })
-      .eq('id', callId);
-
-    if (error) {
-      console.error('Error updating call after payment:', error);
-      throw error;
-    }
-
-    await logCallEvent(callId, 'payment_received', {
-      session_id: session.id,
-      payment_intent: session.payment_intent,
-      amount: session.amount_total,
-      include_recording: includeRecording,
-    });
-
-    // Fetch the call to send confirmation email
-    const { data: call, error: fetchCallError } = await supabaseAdmin
-      .from('calls')
-      .select('*')
-      .eq('id', callId)
-      .single();
-
-    console.log('[Stripe] Fetched call for booking confirmation:', call ? {
-      id: call.id,
-      parent_email: call.parent_email,
-      child_name: call.child_name,
-    } : 'null');
-
-    if (fetchCallError) {
-      console.error('[Stripe] Error fetching call for confirmation email:', fetchCallError);
-    }
-
-    if (call) {
-      console.log('[Stripe] Sending booking confirmation email...');
-      const emailResult = await sendBookingConfirmationEmail(call);
-      console.log('[Stripe] Booking confirmation email result:', emailResult);
-      await logCallEvent(callId, 'booking_confirmation_email_sent', {
-        email_result: emailResult,
-      });
-    } else {
-      console.error('[Stripe] No call found to send confirmation email');
-    }
+    console.error('[Stripe] No call found to send confirmation email');
   }
 
   console.log(`[Stripe] Checkout completed for call ${callId}`);
@@ -197,20 +167,6 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     include_recording: includeRecording,
     type: paymentIntent.metadata?.type,
   });
-
-  // Send confirmation email for recording purchases via Express Checkout
-  if (isRecordingPurchase) {
-    const { data: call } = await supabaseAdmin
-      .from('calls')
-      .select('*')
-      .eq('id', callId)
-      .single();
-
-    if (call) {
-      await sendRecordingPurchaseConfirmationEmail(call);
-      await logCallEvent(callId, 'recording_purchase_email_sent', {});
-    }
-  }
 }
 
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
