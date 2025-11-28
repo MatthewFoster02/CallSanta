@@ -10,6 +10,7 @@ import { Call } from '@/types/database';
  * Finds calls that are:
  * - status: 'scheduled'
  * - payment_status: 'paid'
+ * - call_now: false (call_now=true are handled immediately by Stripe webhook)
  * - scheduled_at: any time in the past or within the next minute
  */
 export async function GET(request: NextRequest) {
@@ -30,6 +31,7 @@ export async function GET(request: NextRequest) {
       .select('*')
       .eq('call_status', 'scheduled')
       .eq('payment_status', 'paid')
+      .eq('call_now', false)
       .lte('scheduled_at', oneMinuteFromNow.toISOString());
 
     if (fetchError) {

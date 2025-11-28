@@ -23,6 +23,7 @@ export interface Call {
   phone_country_code: string;
   scheduled_at: string;
   timezone: string;
+  call_now: boolean;
   gift_budget: number; // Budget in dollars, 0-1000
   parent_email: string;
   stripe_checkout_session_id: string | null;

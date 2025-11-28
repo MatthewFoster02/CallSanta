@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const validated = validationResult.data;
     const purchaseRecording = validated.purchaseRecording ?? false;
+    const callNow = validated.callNow ?? false;
 
     // 3. Process voice file (if present)
     let voiceUrl: string | null = null;
@@ -152,6 +153,7 @@ export async function POST(request: NextRequest) {
         total_amount_cents: totalAmount,
         payment_status: 'pending',
         call_status: 'pending',
+        call_now: callNow,
       })
       .select()
       .single();
