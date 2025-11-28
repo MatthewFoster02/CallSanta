@@ -713,8 +713,8 @@ Create `src/app/api/calls/[callId]/route.ts`:
 1. **Stripe Setup**
 
 Create products in Stripe Dashboard:
-- "Santa Call" - $9.99
-- "Call Recording" - $4.99
+- "Santa Call" - $0.99
+- "Call Recording" - $0.00
 
 2. **Stripe Client**
 

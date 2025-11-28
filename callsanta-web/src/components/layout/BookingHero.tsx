@@ -66,7 +66,7 @@ export function BookingHero({ onBookNow }: BookingHeroProps) {
             onClick={onBookNow}
             className="relative bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-[#2d1010] hover:from-amber-300 hover:via-amber-200 hover:to-amber-300 text-xs sm:text-sm px-6 py-3 rounded-full font-semibold shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:shadow-amber-500/40 border border-amber-200/20"
           >
-            Book Now — $2.99
+            Book Now — $0.99
           </Button>
 
           <a

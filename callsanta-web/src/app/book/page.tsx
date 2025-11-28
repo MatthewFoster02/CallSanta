@@ -10,8 +10,8 @@ import Image from 'next/image';
 
 // Pricing in cents
 const PRICING = {
-  basePrice: 299, // $2.99
-  recordingPrice: 299, // $2.99
+  basePrice: 99, // $0.99
+  recordingPrice: 0, // $0.00
 };
 
 async function handleBookingSubmit(
@@ -218,7 +218,7 @@ function BookingHero({ onBookNow }: { onBookNow?: () => void }) {
               onClick={onBookNow}
               className="bg-[#c41e3a] hover:bg-[#a01830] text-white text-xl sm:text-2xl px-12 py-6 rounded-full font-bold shadow-xl transition-all duration-300 hover:scale-105 border-2 border-[#d4a849]"
             >
-              Book Now — $2.99
+              Book Now — $0.99
             </Button>
             <a
               href="#demo"
