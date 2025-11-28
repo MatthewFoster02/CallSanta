@@ -10,6 +10,7 @@ export const bookingSchema = z.object({
   timezone: z.string().min(1, 'Timezone is required'),
   parentEmail: z.string().email('Valid email required'),
   purchaseRecording: z.boolean().optional(),
+  callNow: z.boolean().optional(),
 });
 
 export type BookingFormData = z.infer<typeof bookingSchema>;

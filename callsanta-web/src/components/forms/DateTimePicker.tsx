@@ -10,6 +10,7 @@ interface DateTimePickerProps {
   value: string; // ISO string
   onChange: (value: string) => void;
   onTimezoneChange: (timezone: string) => void;
+  onCallNowChange?: (callNow: boolean) => void;
   label?: string;
   error?: string;
   onConfirm?: () => void;
@@ -21,6 +22,7 @@ export function DateTimePicker({
   value,
   onChange,
   onTimezoneChange,
+  onCallNowChange,
   label,
   error,
   onConfirm,
@@ -62,6 +64,7 @@ export function DateTimePicker({
   const handleCallNowToggle = () => {
     const newCallNow = !callNow;
     setCallNow(newCallNow);
+    onCallNowChange?.(newCallNow);
 
     if (newCallNow) {
       const now = new Date();
@@ -102,6 +105,7 @@ export function DateTimePicker({
 
   const handleEditCallTime = () => {
     setCallNow(false);
+    onCallNowChange?.(false);
     setLocalError(null);
     setDesktopDate('');
     setDesktopTime('');
@@ -111,6 +115,7 @@ export function DateTimePicker({
   const handleDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputVal = e.target.value;
     setCallNow(false);
+    onCallNowChange?.(false);
 
     if (!inputVal) {
       setLocalError(null);
@@ -126,6 +131,7 @@ export function DateTimePicker({
 
   const handleDesktopSelection = (nextDate: string, nextTime: string) => {
     setCallNow(false);
+    onCallNowChange?.(false);
     setDesktopDate(nextDate);
     setDesktopTime(nextTime);
 
