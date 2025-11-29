@@ -9,12 +9,14 @@ interface AffiliateLinksProps {
   affiliate: StoredAffiliate;
   showHeader?: boolean;
   showBookButton?: boolean;
+  showTips?: boolean;
 }
 
 export function AffiliateLinksPanel({
   affiliate,
   showHeader = true,
   showBookButton = false,
+  showTips = false,
 }: AffiliateLinksProps) {
   const [copiedDirect, setCopiedDirect] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -92,6 +94,17 @@ export function AffiliateLinksPanel({
           </button>
         </div>
       </div>
+
+      {/* Quick Tips */}
+      {showTips && (
+        <div className="pt-3 mt-3 border-t border-gray-200 space-y-2">
+          <p className="text-xs font-semibold text-gray-700">Quick Tips</p>
+          <div className="text-xs text-gray-600 space-y-1.5">
+            <p>🎬 <strong>Try it yourself</strong> — record a reaction video for authentic marketing</p>
+            <p>📱 <strong>Auto-videos included</strong> — we create shareable clips after each call</p>
+          </div>
+        </div>
+      )}
 
       {showBookButton && (
         <div className="pt-2">

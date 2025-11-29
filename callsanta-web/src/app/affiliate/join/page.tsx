@@ -211,7 +211,40 @@ export default function AffiliateJoinPage() {
               showBookButton={true}
             />
 
-            <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            {/* Commission Highlight */}
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+              <div className="text-3xl font-bold text-green-600">20%</div>
+              <p className="text-sm text-green-800 mt-1">
+                of every sale through your link goes directly to you
+              </p>
+            </div>
+
+            {/* Pro Tips */}
+            <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <h3 className="font-semibold text-gray-800 mb-3">Pro Tips for Success</h3>
+              <ul className="space-y-2 text-sm text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="text-[#c41e3a]">🎬</span>
+                  <span><strong>Try it yourself</strong> — Book one call and record the reaction. Authentic moments make the best marketing.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#c41e3a]">📱</span>
+                  <span><strong>Ready-made content</strong> — We automatically create a shareable video after each call. Use it or make your own!</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Stats Email Notice */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600">📊</span>
+                <p className="text-sm text-blue-800">
+                  <strong>Check your inbox!</strong> We&apos;ll email you a stats report 3 days after signup so you can track your progress.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-amber-800">

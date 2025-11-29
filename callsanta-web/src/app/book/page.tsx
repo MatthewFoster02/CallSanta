@@ -156,7 +156,7 @@ export default function BookPage() {
                     <X className="w-4 h-4 text-gray-500" />
                   </button>
                 </div>
-                <AffiliateLinksPanel affiliate={myAffiliate} showHeader={false} />
+                <AffiliateLinksPanel affiliate={myAffiliate} showHeader={false} showTips={true} />
               </div>
             )}
           </div>
@@ -285,7 +285,7 @@ function BookingHero({ onBookNow }: { onBookNow?: () => void }) {
             </h1>
             
             <p className="text-lg sm:text-xl text-[#c41e3a]/70 leading-relaxed max-w-lg mx-auto">
-            Our real santa will call a number, ask your child or friend about their wishlist and then email it to you!
+            Santa will call a number, ask your child or friend about their wishlist and then email it to you!
             </p>
           </div>
 
