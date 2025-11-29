@@ -38,8 +38,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (tsx and dotenv are in devDependencies but needed for worker)
+RUN npm install
 
 # Copy application code
 COPY . .
