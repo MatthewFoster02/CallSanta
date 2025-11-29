@@ -182,3 +182,38 @@ export async function sendPaymentNotification(call: Call): Promise<DiscordResult
   console.log('[Discord] Sending payment notification for call:', call.id);
   return sendDiscordWebhook(webhookUrl, message);
 }
+
+/**
+ * Send notification when a new affiliate joins
+ */
+export async function sendAffiliateJoinedNotification(affiliate: {
+  name: string;
+  email: string;
+  slug: string;
+}): Promise<DiscordResult> {
+  const webhookUrl = process.env.DISCORD_AFFILIATE_JOINED_CHANNEL;
+
+  if (!webhookUrl) {
+    console.warn('[Discord] DISCORD_AFFILIATE_JOINED_CHANNEL not configured');
+    return { success: false, error: 'DISCORD_AFFILIATE_JOINED_CHANNEL not configured' };
+  }
+
+  const message: DiscordMessage = {
+    username: "Santa's Workshop",
+    embeds: [
+      {
+        title: '🤝 New Affiliate Joined!',
+        color: 0xd4a849, // Gold
+        fields: [
+          { name: 'Name', value: affiliate.name, inline: true },
+          { name: 'Email', value: affiliate.email, inline: true },
+          { name: 'Slug', value: `santasnumber.com/${affiliate.slug}`, inline: false },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  };
+
+  console.log('[Discord] Sending affiliate joined notification for:', affiliate.slug);
+  return sendDiscordWebhook(webhookUrl, message);
+}

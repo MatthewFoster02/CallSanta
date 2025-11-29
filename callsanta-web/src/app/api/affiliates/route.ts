@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { isReservedSlug } from '@/lib/constants/routes';
+import { sendAffiliateJoinedNotification } from '@/lib/discord';
 import { z } from 'zod';
 
 const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
@@ -112,6 +113,13 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Send Discord notification (fire and forget)
+    sendAffiliateJoinedNotification({
+      name: affiliate.name,
+      email: affiliate.email,
+      slug: affiliate.slug,
+    }).catch((err) => console.error('[Discord] Failed to send affiliate notification:', err));
 
     // Get the app URL for building links
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://santasnumber.com';
