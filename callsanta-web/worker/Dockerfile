@@ -38,8 +38,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (tsx and dotenv are in devDependencies but needed for worker)
-RUN npm install
+# Install all dependencies (--legacy-peer-deps needed for React 19 compatibility)
+RUN npm install --legacy-peer-deps
 
 # Copy application code
 COPY . .
