@@ -4,6 +4,7 @@ import { getCheckoutSession } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Snowfall, Footer } from "@/components/layout";
 import { ClearFormStorage } from "./ClearFormStorage";
+import { TrackPurchase } from "./TrackPurchase";
 
 function CheckCircleIcon({ className }: { className?: string }) {
   return (
@@ -110,6 +111,11 @@ export default async function SuccessPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-[#c41e3a]">
       <ClearFormStorage />
+      <TrackPurchase
+        callId={callId}
+        amount={call.total_amount_cents ?? 99}
+        currency="USD"
+      />
       <Snowfall />
 
       <section className="relative min-h-screen overflow-hidden">

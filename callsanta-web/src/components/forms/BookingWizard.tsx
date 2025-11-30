@@ -18,6 +18,7 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js';
 import { loadFormData, saveFormData } from '@/lib/hooks/useFormPersistence';
+import { trackEvent } from '@/lib/meta/fbq';
 
 type BookingResult = {
   callId: string;
@@ -79,6 +80,14 @@ export function BookingWizard({ onSubmit, pricing, utmSource, affiliateCode }: B
   const hasLoadedRef = useRef(false);
   const emailBlurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track ViewContent on mount
+  useEffect(() => {
+    trackEvent('ViewContent', {
+      content_name: 'Santa Call Booking Page',
+      content_category: 'Booking',
+    });
+  }, []);
+
   // Load saved form data on mount
   useEffect(() => {
     if (hasLoadedRef.current) return;
@@ -139,9 +148,27 @@ export function BookingWizard({ onSubmit, pricing, utmSource, affiliateCode }: B
   const preparePayment = useCallback(async (values: BookingFormData) => {
     setIsSubmitting(true);
     setFlowError(null);
+
+    // Track Lead event when form is submitted
+    const totalAmount = (pricing.basePrice + (values.purchaseRecording ? pricing.recordingPrice ?? 0 : 0)) / 100;
+    trackEvent('Lead', {
+      content_name: 'Santa Call Booking',
+      value: totalAmount,
+      currency: 'USD',
+    });
+
     try {
       const normalized = { ...values, purchaseRecording: values.purchaseRecording ?? false, utmSource: utmSource ?? null, affiliateCode: affiliateCode ?? null };
       const result = await onSubmit(normalized, voiceFile);
+
+      // Track InitiateCheckout when PaymentIntent is created
+      trackEvent('InitiateCheckout', {
+        content_name: 'Santa Call',
+        value: result.amount / 100,
+        currency: result.currency.toUpperCase(),
+        num_items: 1,
+      });
+
       setBookingResult(result);
     } catch (error) {
       console.error('Booking creation failed:', error);
@@ -149,7 +176,7 @@ export function BookingWizard({ onSubmit, pricing, utmSource, affiliateCode }: B
     } finally {
       setIsSubmitting(false);
     }
-  }, [onSubmit, voiceFile, utmSource, affiliateCode]);
+  }, [onSubmit, voiceFile, utmSource, affiliateCode, pricing.basePrice, pricing.recordingPrice]);
 
   const handleCheckoutRedirect = () => {
     if (!bookingResult) return;
@@ -645,6 +672,8 @@ function ExpressCheckoutWrapper({
   bookingResult: {
     callId: string;
     clientSecret: string;
+    amount: number;
+    currency: string;
   };
   setFlowError: (value: string | null) => void;
   setIsSubmitting: (value: boolean) => void;
@@ -696,6 +725,14 @@ function ExpressCheckoutWrapper({
             setIsSubmitting(false);
             return;
           }
+
+          // Track Purchase event on successful payment
+          trackEvent('Purchase', {
+            content_name: 'Santa Call',
+            value: bookingResult.amount / 100,
+            currency: bookingResult.currency.toUpperCase(),
+            content_ids: [bookingResult.callId],
+          });
 
           window.location.href = `/success?call_id=${bookingResult.callId}`;
         } catch (err) {
