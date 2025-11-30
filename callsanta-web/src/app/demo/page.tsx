@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
-import { cn } from '@/lib/utils';
-import { Footer } from '@/components/layout';
-import { FaInstagram, FaTiktok, FaXTwitter, FaFacebook, FaYoutube, FaReddit } from 'react-icons/fa6';
-import type { IconType } from 'react-icons';
+import { Footer, AsSeenBar } from '@/components/layout';
 import Link from 'next/link';
 
 export default function DemoPage() {
@@ -28,59 +25,6 @@ export default function DemoPage() {
         <div className="fixed bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white/30 to-transparent pointer-events-none z-10" />
 
         <Footer />
-      </div>
-    </div>
-  );
-}
-
-/* ============================================
-   AS SEEN BAR COMPONENT - WHITE BACKGROUND
-   ============================================ */
-const PLATFORMS: { name: string; icon: IconType; link?: string }[] = [
-  { name: 'Instagram', icon: FaInstagram, link: 'https://instagram.com/santasnumberonig' },
-  { name: 'TikTok', icon: FaTiktok },
-  { name: 'X', icon: FaXTwitter },
-  { name: 'Facebook', icon: FaFacebook },
-  { name: 'YouTube', icon: FaYoutube },
-  { name: 'Reddit', icon: FaReddit },
-];
-
-function AsSeenBar({ className }: { className?: string }) {
-  return (
-    <div className={cn('bg-white relative z-40', className)}>
-      {/* Gold top accent line */}
-      <div className="h-0.5 bg-[#d4a849]" />
-      
-      <div className="py-3 px-3">
-        {/* Label */}
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="h-px w-8 bg-[#d4a849]" />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#c41e3a]">
-            As seen on
-          </p>
-          <div className="h-px w-8 bg-[#d4a849]" />
-        </div>
-
-        {/* Platform logos */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-          {PLATFORMS.map((platform) => (
-            <div key={platform.name} className="transition-transform duration-300">
-              {platform.link ? (
-                <a href={platform.link} target="_blank" rel="noopener noreferrer">
-                  <platform.icon
-                    size={24}
-                    className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
-                  />
-                </a>
-              ) : (
-                <platform.icon
-                  size={24}
-                  className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
-                />
-              )}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

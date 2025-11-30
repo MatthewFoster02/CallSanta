@@ -12,7 +12,7 @@ import {
   StoredAffiliate,
 } from '@/lib/affiliate/storage';
 import { Check, X, Loader2, AlertCircle } from 'lucide-react';
-import { Footer } from '@/components/layout';
+import { Footer, AsSeenBar } from '@/components/layout';
 
 const joinSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -150,8 +150,10 @@ export default function AffiliateJoinPage() {
   // If user already has an affiliate, show their links
   if (existingAffiliate) {
     return (
-      <div className="min-h-screen bg-[#c41e3a]">
-        <div className="max-w-md mx-auto px-4 py-12">
+      <div className="min-h-screen overflow-hidden relative">
+        <AsSeenBar className="w-full rounded-b-xl" />
+        <div className="bg-[#c41e3a] min-h-screen relative">
+          <div className="max-w-md mx-auto px-4 py-12">
           <div className="bg-white rounded-2xl p-6 shadow-xl border-2 border-[#d4a849]">
             <div className="text-center mb-6">
               <div className="text-4xl mb-2">🎅</div>
@@ -183,8 +185,9 @@ export default function AffiliateJoinPage() {
               </p>
             </div>
           </div>
+          </div>
+          <Footer />
         </div>
-        <Footer />
       </div>
     );
   }
@@ -192,8 +195,10 @@ export default function AffiliateJoinPage() {
   // If affiliate was just created, show success
   if (createdAffiliate) {
     return (
-      <div className="min-h-screen bg-[#c41e3a]">
-        <div className="max-w-md mx-auto px-4 py-12">
+      <div className="min-h-screen overflow-hidden relative">
+        <AsSeenBar className="w-full rounded-b-xl" />
+        <div className="bg-[#c41e3a] min-h-screen relative">
+          <div className="max-w-md mx-auto px-4 py-12">
           <div className="bg-white rounded-2xl p-6 shadow-xl border-2 border-[#d4a849]">
             <div className="text-center mb-6">
               <div className="text-5xl mb-3">🎉</div>
@@ -254,16 +259,19 @@ export default function AffiliateJoinPage() {
               </div>
             </div>
           </div>
+          </div>
+          <Footer />
         </div>
-        <Footer />
       </div>
     );
   }
 
   // Show the join form
   return (
-    <div className="min-h-screen bg-[#c41e3a]">
-      <div className="max-w-md mx-auto px-4 py-12">
+    <div className="min-h-screen overflow-hidden relative">
+      <AsSeenBar className="w-full rounded-b-xl" />
+      <div className="bg-[#c41e3a] min-h-screen relative">
+        <div className="max-w-md mx-auto px-4 py-12">
         <div className="bg-white rounded-2xl p-6 shadow-xl border-2 border-[#d4a849]">
           {/* Header */}
           <div className="text-center mb-6">
@@ -388,8 +396,9 @@ export default function AffiliateJoinPage() {
             By creating an affiliate link, you agree to our terms of service.
           </p>
         </div>
+        </div>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 }

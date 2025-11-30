@@ -4,10 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BookingWizard } from '@/components/forms';
 import { BookingFormData } from '@/lib/schemas/booking';
 import { Button } from '@/components/ui';
-import { cn } from '@/lib/utils';
-import { Footer } from '@/components/layout';
-import { FaInstagram, FaTiktok, FaXTwitter, FaFacebook, FaYoutube, FaReddit } from 'react-icons/fa6';
-import type { IconType } from 'react-icons';
+import { Footer, AsSeenBar } from '@/components/layout';
 import { useAffiliateAttribution } from '@/lib/hooks/useAffiliateAttribution';
 import { getMyAffiliateFromStorage, StoredAffiliate } from '@/lib/affiliate/storage';
 import { AffiliateLinksPanel } from '@/components/AffiliateLinksPanel';
@@ -198,59 +195,6 @@ function HeartIcon() {
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
-  );
-}
-
-/* ============================================
-   AS SEEN BAR COMPONENT - WHITE BACKGROUND
-   ============================================ */
-const PLATFORMS: { name: string; icon: IconType; link?: string }[] = [
-  { name: 'Instagram', icon: FaInstagram, link: 'https://instagram.com/santasnumberonig' },
-  { name: 'TikTok', icon: FaTiktok, link: 'https://www.tiktok.com/@santasnumber?_r=1&_t=ZN-91oX7xmJOA2' },
-  // { name: 'X', icon: FaXTwitter },
-  { name: 'Facebook', icon: FaFacebook, link: 'https://www.facebook.com/share/16nhKvceHA/?mibextid=wwXIfr' },
-  { name: 'YouTube', icon: FaYoutube, link: 'https://www.youtube.com/channel/UCWE3IJm1j25fhAIdSYnOxrA' },
-  // { name: 'Reddit', icon: FaReddit },
-];
-
-function AsSeenBar({ className }: { className?: string }) {
-  return (
-    <div className={cn('bg-white relative z-40', className)}>
-      {/* Gold top accent line */}
-      <div className="h-0.5 bg-[#d4a849]" />
-      
-      <div className="py-3 px-3">
-        {/* Label */}
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="h-px w-8 bg-[#d4a849]" />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#c41e3a]">
-            As seen on
-          </p>
-          <div className="h-px w-8 bg-[#d4a849]" />
-        </div>
-
-      {/* Platform logos */}
-      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-        {PLATFORMS.map((platform) => (
-          <div key={platform.name} className="transition-transform duration-300">
-            {platform.link ? (
-              <a href={platform.link} target="_blank" rel="noopener noreferrer">
-                <platform.icon
-                  size={24}
-                  className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
-                />
-              </a>
-            ) : (
-              <platform.icon
-                size={24}
-                className="text-[#c41e3a] opacity-80 hover:opacity-100 transition-opacity"
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      </div>
-    </div>
   );
 }
 

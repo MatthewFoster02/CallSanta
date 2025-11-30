@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Snowfall, Footer } from "@/components/layout";
+import { Snowfall, Footer, AsSeenBar } from "@/components/layout";
 
 function ShieldIcon({ className }: { className?: string }) {
   return (
@@ -51,8 +51,11 @@ function CheckCircleIcon({ className }: { className?: string }) {
 
 export default function LegalPage() {
   return (
-    <div className="min-h-screen bg-[#c41e3a]">
-      <Snowfall />
+    <div className="min-h-screen overflow-hidden relative">
+      <AsSeenBar className="w-full rounded-b-xl" />
+
+      <div className="bg-[#c41e3a] min-h-screen relative">
+        <Snowfall />
 
       <section className="relative min-h-screen overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#c41e3a] via-[#b01a33] to-[#8d142a]" />
@@ -205,7 +208,8 @@ export default function LegalPage() {
         </div>
       </section>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 }
