@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CallSanta
 
-## Getting Started
+A web application that lets parents book personalized phone calls from Santa Claus to their children, powered by AI voice technology.
 
-First, run the development server:
+## Features
+
+- **Personalized Santa Calls** - AI-powered conversations using child's name, age, and interests
+- **Flexible Scheduling** - Book calls in advance or request immediate calls
+- **Call Recording** - Optional recording with shareable video generation
+- **Affiliate Program** - Built-in referral system with tracking
+- **Email Notifications** - Confirmations, reminders, and post-call summaries
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 16, React 19, Tailwind CSS 4 |
+| Database | Supabase (PostgreSQL) |
+| Payments | Stripe |
+| AI Voice | ElevenLabs + Twilio |
+| Video | Remotion + AWS Lambda |
+| Email | Resend |
+| Hosting | Vercel |
+
+## Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your API keys
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                 # Next.js pages & API routes
+│   ├── api/            # Backend endpoints
+│   │   ├── calls/      # Call management
+│   │   ├── webhooks/   # Stripe, ElevenLabs, Remotion
+│   │   └── cron/       # Scheduled jobs
+│   ├── book/           # Booking wizard
+│   └── recording/      # Video playback
+├── components/         # React components
+├── lib/               # Services & utilities
+└── remotion/          # Video composition
+```
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev              # Development server
+npm run build            # Production build
+npm run remotion:studio  # Video composition editor
+npm run worker:dev       # Background worker
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+See the [docs/](./docs/) folder for detailed documentation:
 
-## Deploy on Vercel
+- [Getting Started](./docs/GETTING_STARTED.md) - Local setup guide
+- [Architecture](./docs/ARCHITECTURE.md) - System design & data flow
+- [API Reference](./docs/API_REFERENCE.md) - Endpoint documentation
+- [Environment Variables](./docs/ENVIRONMENT_VARIABLES.md) - Configuration
+- [Database Schema](./docs/DATABASE_SCHEMA.md) - Tables & storage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## How It Works
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Parent fills out booking form with child details
+2. Payment processed via Stripe
+3. At scheduled time, cron job triggers ElevenLabs
+4. Santa AI calls the phone number and has a personalized conversation
+5. If recording purchased, audio is rendered into shareable video
+6. Email sent with transcript and/or video link
+
+## License
+
+Private - All rights reserved.
