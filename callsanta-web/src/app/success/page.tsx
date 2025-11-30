@@ -217,7 +217,7 @@ export default async function SuccessPage({ searchParams }: PageProps) {
                     2
                   </span>
                   <span>
-                    Santa will chat about wishes, gifts, and holiday plans.
+                    Santa will spend up to 5 magical minutes chatting about wishes and holiday plans.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
