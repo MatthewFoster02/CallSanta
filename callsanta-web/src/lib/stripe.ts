@@ -57,6 +57,7 @@ export async function createCheckoutSession(
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: lineItems,
+    allow_promotion_codes: true,
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cancelled?call_id=${call.id}`,
     customer_email: call.parent_email,
